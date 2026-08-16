@@ -176,7 +176,7 @@
     color: var(--akm-blue);
   }
 
-  /* OPSI JAWABAN UMUM & CHECKBOX */
+  /* OPSI JAWABAN */
   .option-item {
     display: flex;
     align-items: center;
@@ -246,7 +246,7 @@
     border-color: #2563eb;
   }
 
-  /* 4. SIDEBAR NAVIGASI GRID */
+  /* 4. SIDEBAR NAVIGASI GRID (HANYA MONITOR/INDIKATOR PROGRES) */
   .grid-sidebar {
     width: 280px;
     background-color: #ffffff;
@@ -276,21 +276,24 @@
     gap: 8px;
   }
 
-  .btn-num {
+  .btn-num-indicator {
     aspect-ratio: 1;
     border: 1px solid var(--akm-border);
     background-color: #f8fafc;
     border-radius: 6px;
     font-weight: 700;
     font-size: 0.85rem;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #94a3b8;
+    user-select: none;
+    cursor: default; /* Kunci kursor, tidak bisa diklik */
   }
 
-  .btn-num.active { border: 2px solid var(--akm-blue); background-color: #dbeafe; color: var(--akm-blue); }
-  .btn-num.answered { background-color: var(--akm-green); color: white; border-color: var(--akm-green); }
+  .btn-num-indicator.active { border: 2px solid var(--akm-blue); background-color: #dbeafe; color: var(--akm-blue); }
+  .btn-num-indicator.answered { background-color: var(--akm-green); color: white; border-color: var(--akm-green); }
+  .btn-num-indicator.skipped { background-color: #e2e8f0; color: #475569; }
 
   .grid-legend {
     margin-top: 10px;
@@ -312,7 +315,7 @@
     height: var(--footer-height);
     background-color: #ffffff;
     border-top: 2px solid var(--akm-border);
-    padding: 0 16px;
+    padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -321,18 +324,17 @@
   }
 
   .btn-action {
-    padding: 8px 14px;
+    padding: 10px 20px;
     border-radius: 6px;
     font-weight: 700;
     border: none;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .btn-prev { background-color: #64748b; color: white; }
   .btn-next { background-color: var(--akm-blue); color: white; }
   .btn-submit { background-color: var(--akm-green); color: white; }
   .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -360,8 +362,8 @@
     }
 
     .grid-sidebar.open { transform: translateX(0); }
-    .akm-footer { padding: 0 8px; }
-    .btn-action { padding: 8px 10px; font-size: 0.75rem; }
+    .akm-footer { padding: 0 12px; }
+    .btn-action { padding: 8px 14px; font-size: 0.8rem; }
     #questionProgress { font-size: 0.75rem !important; }
   }
 </style>
@@ -392,15 +394,13 @@
 
   <!-- SUB BAR INFO SISWA -->
   <section class="sub-bar">
-    <div class="user-details" id="userInfo">
-      <!-- Info Siswa Dimuat via JS -->
-    </div>
+    <div class="user-details" id="userInfo"></div>
     <button class="btn-grid-toggle" onclick="toggleSidebar()">
-      📱 Daftar Soal
+      📊 Status Progres
     </button>
   </section>
 
-  <!-- MAIN DUAL PANEL -->
+  <!-- MAIN CONTAINER -->
   <main class="main-container">
     <div class="exam-panel" id="examPanel">
       <div class="question-header">
@@ -414,27 +414,25 @@
     </div>
 
     <aside class="grid-sidebar" id="gridSidebar">
-      <div class="grid-title">PETA NAVIGASI SOAL</div>
-      <div class="number-grid" id="numberGrid">
-        <!-- Grid Nomor Soal Dimuat via JS -->
-      </div>
+      <div class="grid-title">INDIKATOR PROGRES SOAL</div>
+      <div class="number-grid" id="numberGrid"></div>
 
       <div class="grid-legend">
-        <div class="legend-item"><div class="legend-box" style="background-color: var(--akm-green);"></div> Sudah Dijawab</div>
-        <div class="legend-item"><div class="legend-box" style="background-color: #dbeafe; border-color: var(--akm-blue);"></div> Soal Aktif</div>
-        <div class="legend-item"><div class="legend-box" style="background-color: #f8fafc;"></div> Belum Dijawab</div>
+        <div class="legend-item"><div class="legend-box" style="background-color: var(--akm-green);"></div> Sudah Selesai</div>
+        <div class="legend-item"><div class="legend-box" style="background-color: #dbeafe; border-color: var(--akm-blue);"></div> Sedang Dikerjakan</div>
+        <div class="legend-item"><div class="legend-box" style="background-color: #f8fafc;"></div> Belum Dikerjakan</div>
       </div>
     </aside>
   </main>
 
-  <!-- FOOTER NAVIGASI (FIXED POSITION) -->
+  <!-- FOOTER NAVIGASI (HANYA TOMBOL SELANJUTNYA / SELESAI) -->
   <footer class="akm-footer">
-    <button id="btnPrev" class="btn-action btn-prev" onclick="prevQuestion()">⬅️ Sebelumnya</button>
-    
     <div id="questionProgress" style="font-weight: 700; color: #475569; font-size: 0.85rem;">Soal 1 dari ...</div>
 
-    <button id="btnNext" class="btn-action btn-next" onclick="nextQuestion()">Selanjutnya ➡️</button>
-    <button id="btnSubmitExam" class="btn-action btn-submit" onclick="submitExam()" style="display: none;">Selesaikan Ujian ✔️</button>
+    <div style="display: flex; gap: 10px;">
+      <button id="btnNext" class="btn-action btn-next" onclick="nextQuestion()">Soal Berikutnya ➡️</button>
+      <button id="btnSubmitExam" class="btn-action btn-submit" onclick="submitExam()" style="display: none;">Selesaikan Ujian ✔️</button>
+    </div>
   </footer>
 
   <script src="ujian.js"></script>
