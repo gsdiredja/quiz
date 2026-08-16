@@ -13,11 +13,7 @@ let cleanPaketId = "soal-uh1";
 
 function getCleanPaketId(rawPath) {
   if (!rawPath) return "soal-uh1";
-  return String(rawPath)
-    .replace(/^.*[\\\/]/, '') 
-    .replace('.json', '')      
-    .trim()
-    .toLowerCase();
+  return String(rawPath).replace(/^.*[\\\/]/, '').replace('.json', '').trim().toLowerCase();
 }
 
 function shuffleArray(array) {
@@ -58,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // 1. AMBIL MASTER SOAL DARI SPREADSHEET
+    // 1. Ambil Master Bank Soal
     let masterQuestions = [];
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -91,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 2. CEK SESI DI SPREADSHEET (CLOUD RESTORE)
+    // 2. Cek Sesi Cloud (Restore jika ganti perangkat)
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -130,7 +126,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // 3. JIKA SESI BARU (PERTAMA KALI BUKA UJIAN)
+    // 3. Jika sesi baru (pertama kali buka)
     if (!sessionRestored) {
       questionsData = shuffleArray(masterQuestions);
       questionsData.forEach((q) => {
@@ -143,7 +139,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       currentQuestionIndex = 0;
       userAnswers = {};
-      
       await syncSessionToCloud();
     }
 
@@ -158,7 +153,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🔄 SINKRONISASI KE GOOGLE SPREADSHEET (CLOUD AUTOSAVE)
 async function syncSessionToCloud() {
   if (!currentUsername || !cleanPaketId || !Array.isArray(questionsData) || questionsData.length === 0) {
     return;
@@ -367,6 +361,7 @@ function selectRadioOption(qName, val, el) {
   userAnswers[qName] = val;
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function toggleCheckboxOption(qName, val, el) {
@@ -387,6 +382,7 @@ function toggleCheckboxOption(qName, val, el) {
 
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function saveMatchingOption(qName, pairId, val) {
@@ -396,6 +392,7 @@ function saveMatchingOption(qName, pairId, val) {
 
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function saveEssayText(qName, text) {
@@ -404,6 +401,7 @@ function saveEssayText(qName, text) {
 
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function isQuestionAnswered(qName) {
@@ -420,7 +418,6 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-// 🔒 PINDAH SOAL: SIMPAN PROGRES SECARA REALTIME KE CLOUD
 async function nextQuestion() {
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
@@ -431,10 +428,7 @@ async function nextQuestion() {
 
   if (currentQuestionIndex < questionsData.length - 1) {
     currentQuestionIndex++;
-    
-    // Simpan ke Google Spreadsheet
-    syncSessionToCloud();
-    
+    await syncSessionToCloud();
     showQuestion(currentQuestionIndex);
     
     const sidebar = document.getElementById("gridSidebar");
@@ -540,11 +534,8 @@ function confirmLogout() {
   }
 }
 
-// 🔒 LOGOUT: Bersihkan sesi browser lokal tanpa mereset status di server
 async function logout() {
   clearInterval(timerInterval);
-  
-  // Kirim snapshot terakhir sebelum keluar
   try {
     await syncSessionToCloud();
   } catch (e) {}
