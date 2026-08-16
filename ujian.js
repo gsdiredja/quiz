@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentUserData = { username: "siswa", nama: "Siswa", kelas: "-" };
     }
     
-    currentUsername = currentUserData.username || "siswa";
+    currentUsername = String(currentUserData.username || "siswa").trim().toLowerCase();
     cleanPaketId = getCleanPaketId(rawSoalPath);
 
     const userInfoEl = document.getElementById("userInfo");
@@ -58,7 +58,40 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // 🌐 1. CEK SESI DI GOOGLE SPREADSHEET (CLOUD RESTORE JIKA PINDAH PERANGKAT)
+    // 1. AMBIL MASTER SOAL DARI SPREADSHEET
+    let masterQuestions = [];
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "getquestions", paket: cleanPaketId })
+      });
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        if (!Array.isArray(result.data) && result.data.questions) {
+          masterQuestions = result.data.questions;
+        } else if (Array.isArray(result.data)) {
+          masterQuestions = result.data;
+        }
+      }
+    } catch(err) {
+      console.error("Gagal load bank soal:", err);
+    }
+
+    if (masterQuestions.length === 0) {
+      if (container) {
+        container.innerHTML = `
+          <div style="color: #dc2626; padding: 30px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+            <h3>⚠️ Soal Ujian Tidak Ditemukan!</h3>
+            <p style="font-size: 0.9rem; color: #991b1b; margin-top: 6px;">Paket soal '${cleanPaketId}' belum tersedia di Spreadsheet.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // 2. CEK SESI DI SPREADSHEET (APAKAH SUDAH PERNAH MEMULAI DI PERANGKAT LAIN)
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -69,62 +102,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       const sessionData = await sessionRes.json();
 
-      if (sessionData.status === "found" && sessionData.shuffledQuestions && sessionData.shuffledQuestions.length > 0) {
-        questionsData = sessionData.shuffledQuestions;
-        userAnswers = sessionData.userAnswers || {};
-        currentQuestionIndex = sessionData.currentIndex || 0;
-        if (sessionData.remainingSeconds !== null && !isNaN(parseInt(sessionData.remainingSeconds))) {
-          totalSeconds = parseInt(sessionData.remainingSeconds, 10);
+      if (sessionData.status === "found" && Array.isArray(sessionData.questionOrder) && sessionData.questionOrder.length > 0) {
+        const orderMap = new Map();
+        masterQuestions.forEach((q, idx) => {
+          const key = q.name || q.id || `q_${idx}`;
+          orderMap.set(String(key).trim().toLowerCase(), q);
+        });
+
+        questionsData = [];
+        sessionData.questionOrder.forEach(qKey => {
+          const cleanK = String(qKey).trim().toLowerCase();
+          if (orderMap.has(cleanK)) {
+            questionsData.push(orderMap.get(cleanK));
+          }
+        });
+
+        if (questionsData.length > 0) {
+          userAnswers = sessionData.userAnswers || {};
+          currentQuestionIndex = parseInt(sessionData.currentIndex, 10) || 0;
+          if (sessionData.remainingSeconds !== null && !isNaN(parseInt(sessionData.remainingSeconds))) {
+            totalSeconds = parseInt(sessionData.remainingSeconds, 10);
+          }
+          sessionRestored = true;
         }
-        sessionRestored = true;
       }
     } catch (err) {
-      console.warn("Gagal mengecek sesi cloud, beralih ke cache lokal...", err);
+      console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // Jika data sesi cloud berhasil dimuat
-    if (sessionRestored) {
-      startTimer();
-      renderNumberGrid();
-      showQuestion(currentQuestionIndex);
-      return;
-    }
-
-    // 🌐 2. JIKA SESI BARU (PERTAMA KALI UJIAN): LOAD DARI BANK SOAL & ACAK
-    let rawLoadedQuestions = null;
-    try {
-      const response = await fetch(SCRIPT_URL, {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "getquestions", paket: cleanPaketId })
-      });
-      const result = await response.json();
-      if (result.status === "success" && result.data) {
-        rawLoadedQuestions = result.data;
-      }
-    } catch(err) {
-      console.error("Gagal load soal dari server:", err);
-    }
-
-    if (rawLoadedQuestions) {
-      let finalArray = [];
-      let maxQty = 0;
-
-      if (!Array.isArray(rawLoadedQuestions) && rawLoadedQuestions.questions) {
-        maxQty = rawLoadedQuestions.maxQuestions || 0;
-        finalArray = rawLoadedQuestions.questions;
-      } else if (Array.isArray(rawLoadedQuestions)) {
-        finalArray = rawLoadedQuestions;
-      }
-
-      let shuffledAll = shuffleArray(finalArray);
-      if (maxQty > 0 && maxQty < shuffledAll.length) {
-        questionsData = shuffledAll.slice(0, maxQty);
-      } else {
-        questionsData = shuffledAll;
-      }
-
+    // 3. JIKA SESI BARU (PERTAMA KALI BUKA UJIAN)
+    if (!sessionRestored) {
+      questionsData = shuffleArray(masterQuestions);
       questionsData.forEach((q) => {
         if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
           q.options = shuffleArray(q.options);
@@ -133,21 +141,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           q.matchOptions = shuffleArray(q.matchOptions);
         }
       });
-
-      startTimer();
-      renderNumberGrid();
-      showQuestion(0);
-      syncSessionToCloud(); // Simpan susunan soal awal ke Cloud
-    } else {
-      if (container) {
-        container.innerHTML = `
-          <div style="color: #dc2626; padding: 30px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
-            <h3>⚠️ Soal Ujian Tidak Ditemukan!</h3>
-            <p style="font-size: 0.9rem; color: #991b1b; margin-top: 6px;">Paket soal belum tersedia di Spreadsheet.</p>
-          </div>
-        `;
-      }
+      currentQuestionIndex = 0;
+      userAnswers = {};
+      
+      // Simpan urutan acak awal ke Cloud setelah array soal dipastikan terisi
+      await syncSessionToCloud();
     }
+
+    startTimer();
+    renderNumberGrid();
+    showQuestion(currentQuestionIndex);
 
   } catch (fatalError) {
     if (container) {
@@ -156,30 +159,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🔄 SINKRONISASI RINGAN (Hanya dipanggil saat pindah nomor)
-function syncSessionToCloud() {
-  if (!currentUsername || !cleanPaketId || questionsData.length === 0) return;
+// 🔄 SINKRONISASI DATA SESI KE GOOGLE SPREADSHEET
+async function syncSessionToCloud() {
+  if (!currentUsername || !cleanPaketId || !Array.isArray(questionsData) || questionsData.length === 0) {
+    return;
+  }
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "cors",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "savestudentsession",
-      username: currentUsername,
-      paket: cleanPaketId,
-      remainingSeconds: totalSeconds,
-      currentIndex: currentQuestionIndex,
-      shuffledQuestions: questionsData,
-      userAnswers: userAnswers
-    })
-  }).catch(() => {});
+  const questionOrder = questionsData.map((q, idx) => q.name || q.id || `q_${idx}`);
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "savestudentsession",
+        username: currentUsername,
+        paket: cleanPaketId,
+        remainingSeconds: totalSeconds,
+        currentIndex: currentQuestionIndex,
+        questionOrder: questionOrder,
+        userAnswers: userAnswers
+      })
+    });
+  } catch (e) {
+    console.warn("Gagal autosave ke spreadsheet:", e);
+  }
 }
 
-// ⏱️ TIMER RINGAN (Tanpa kirim request periodik tiap detik/10 detik)
 function startTimer() {
   updateTimerDisplay();
-  
   timerInterval = setInterval(() => {
     totalSeconds--;
     updateTimerDisplay();
@@ -267,7 +276,7 @@ function showQuestion(index) {
     `;
   }
 
-  // 1. Radio / Boolean (Benar / Salah & Pilihan Ganda)
+  // 1. Radio / Boolean
   if ((q.type === "radio" || q.type === "boolean") && Array.isArray(q.options)) {
     q.options.forEach((opt, idx) => {
       const optVal = opt.v !== undefined ? opt.v : String.fromCharCode(65 + idx);
@@ -281,7 +290,7 @@ function showQuestion(index) {
       `;
     });
   } 
-  // 2. Checkbox Kompleks (Maksimal 2 Pilihan)
+  // 2. Checkbox Kompleks
   else if ((q.type === "checkbox" || q.type === "checkbox_limit_2") && Array.isArray(q.options)) {
     const savedArr = Array.isArray(userAnswers[qKey]) ? userAnswers[qKey] : [];
     html += `<p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;"><em>*Pilihlah tepat 2 jawaban.</em></p>`;
@@ -298,7 +307,7 @@ function showQuestion(index) {
       `;
     });
   } 
-  // 3. Menjodohkan (Matching)
+  // 3. Menjodohkan
   else if (q.type === "matching" && Array.isArray(q.pairs)) {
     const savedPairs = (typeof userAnswers[qKey] === "object" && userAnswers[qKey] !== null) ? userAnswers[qKey] : {};
     html += `<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">`;
@@ -317,8 +326,8 @@ function showQuestion(index) {
       `;
     });
     html += `</div>`;
-  }
-  // 4. Uraian / Essay
+  } 
+  // 4. Essay
   else if (q.type === "essay") {
     const savedText = typeof userAnswers[qKey] === "string" ? userAnswers[qKey] : "";
     html += `
@@ -359,7 +368,8 @@ function selectRadioOption(qName, val, el) {
   if (input) input.checked = true;
 
   userAnswers[qName] = val;
-  saveCurrentAnswerLocal();
+  syncSessionToCloud();
+  renderNumberGrid();
   hideWarning();
 }
 
@@ -379,7 +389,8 @@ function toggleCheckboxOption(qName, val, el) {
     el.classList.add('selected');
   }
 
-  saveCurrentAnswerLocal();
+  syncSessionToCloud();
+  renderNumberGrid();
   hideWarning();
 }
 
@@ -388,7 +399,8 @@ function saveMatchingOption(qName, pairId, val) {
   if (val) userAnswers[qName][pairId] = val;
   else delete userAnswers[qName][pairId];
 
-  saveCurrentAnswerLocal();
+  syncSessionToCloud();
+  renderNumberGrid();
   hideWarning();
 }
 
@@ -396,14 +408,9 @@ function saveEssayText(qName, text) {
   if (text.trim() !== "") userAnswers[qName] = text.trim();
   else delete userAnswers[qName];
 
-  saveCurrentAnswerLocal();
-  hideWarning();
-}
-
-// Penyimpanan instan ke cache lokal tanpa beban server
-function saveCurrentAnswerLocal() {
-  localStorage.setItem(`answers_${currentUsername}_${cleanPaketId}`, JSON.stringify(userAnswers));
+  syncSessionToCloud();
   renderNumberGrid();
+  hideWarning();
 }
 
 function isQuestionAnswered(qName) {
@@ -420,8 +427,8 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-// 🔒 PINDAH SOAL: LANGSUNG MAJU & SIMPAN KE SERVER SPREADSHEET
-function nextQuestion() {
+// 🔒 PINDAH SOAL: SIMPAN INDEKS BARU KE CLOUD
+async function nextQuestion() {
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
   if (!isQuestionAnswered(qKey)) {
@@ -432,7 +439,7 @@ function nextQuestion() {
   if (currentQuestionIndex < questionsData.length - 1) {
     currentQuestionIndex++;
     
-    // Kirim sinkronisasi progres ke Cloud saat nomor soal berpindah
+    // Kirim nomor aktif dan sisa waktu terbaru ke spreadsheet
     syncSessionToCloud();
     showQuestion(currentQuestionIndex);
     
@@ -539,7 +546,6 @@ function confirmLogout() {
   }
 }
 
-// 🔒 LOGOUT: Sesi lokal dibersihkan tapi status di server tetap terkunci (Online)
 function logout() {
   clearInterval(timerInterval);
   localStorage.removeItem("userData");
