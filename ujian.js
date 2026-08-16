@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // Ambil nomor soal terakhir yang sedang dikerjakan agar siswa tidak reset nomor saat refresh
+    // Ambil posisi nomor soal terakhir agar tersimpan jika halaman di-refresh
     const savedLastIndex = localStorage.getItem(`currentIndex_${currentUsername}_${cleanPaketId}`);
     if (savedLastIndex !== null && !isNaN(parseInt(savedLastIndex))) {
       currentQuestionIndex = parseInt(savedLastIndex, 10);
@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           finalArray = rawLoadedQuestions;
         }
 
+        // Acak urutan soal
         let shuffledAll = shuffleArray(finalArray);
 
         if (maxQty > 0 && maxQty < shuffledAll.length) {
@@ -150,6 +151,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           questionsData = shuffledAll;
         }
 
+        // Acak opsi jawaban
         questionsData.forEach((q) => {
           if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
             q.options = shuffleArray(q.options);
@@ -229,7 +231,7 @@ function changeFontSize(size) {
   else if (size === 'large') panel.style.fontSize = '1.15rem';
 }
 
-/* 🔒 RENDER NUMBER GRID: HANYA INDIKATOR STATUS (TIDAK BISA DIKLIK) */
+/* 🔒 RENDER NUMBER GRID: HANYA INDIKATOR VISUAL (TIDAK BISA DIKLIK) */
 function renderNumberGrid() {
   const gridContainer = document.getElementById("numberGrid");
   if (!gridContainer || !questionsData) return;
@@ -243,7 +245,7 @@ function renderNumberGrid() {
     let classList = "btn-num-indicator";
     if (isActive) classList += " active";
     else if (isAnswered) classList += " answered";
-    else if (idx < currentQuestionIndex) classList += " skipped"; // Soal terlewat
+    else if (idx < currentQuestionIndex) classList += " skipped";
 
     html += `<div class="${classList}">${idx + 1}</div>`;
   });
@@ -471,18 +473,18 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-/* 🔒 HANYA BISA MAJU KE DEPAN (KONFIRMASI JIKA SOAL AKAN DIKUNCI / TIDAK BISA KEMBALI) */
+/* 🔒 FUNGSI PINDAH SOAL: LANGSUNG MAJU TANPA POP-UP CONFIRM */
 function nextQuestion() {
   saveCurrentAnswer();
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
-  // Tetap memastikan soal sudah dijawab sebelum maju
+  // Wajib dijawab terlebih dahulu
   if (!isQuestionAnswered(qKey)) {
     showWarning("Jawab pertanyaan ini terlebih dahulu sebelum melanjutkan!");
     return;
   }
 
-  // Langsung pindah ke nomor berikutnya tanpa pop-up konfirmasi
+  // Langsung eksekusi ke nomor selanjutnya
   if (currentQuestionIndex < questionsData.length - 1) {
     currentQuestionIndex++;
     
@@ -496,7 +498,6 @@ function nextQuestion() {
       sidebar.classList.remove("open");
     }
   }
-}
 }
 
 function showWarning(msg) {
@@ -600,12 +601,9 @@ function confirmLogout() {
   }
 }
 
+/* 🔒 LOGOUT: TIDAK MENGIRIM RESET KE SERVER AGAR STATUS TETAP TERKUNCI */
 function logout() {
   clearInterval(timerInterval);
-
-  // 🔒 HAPUS fetch logout ke GAS agar status siswa TETAP "ONLINE_KODEPAKET" (Terkunci)
-  // Siswa tidak akan bisa login lagi dan akan muncul notifikasi: "Hubungi Admin/Proktor"
-  
   localStorage.removeItem("userData");
   window.location.href = "index.html";
 }
