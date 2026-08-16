@@ -8,6 +8,7 @@
     :root {
       --primary: #0f172a;
       --accent: #2563eb;
+      --accent-hover: #1d4ed8;
       --bg: #f8fafc;
       --card: #ffffff;
       --border: #cbd5e1;
@@ -16,6 +17,7 @@
       --green: #16a34a;
       --red: #dc2626;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -28,7 +30,7 @@
     .form-control-login { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; }
     .form-control-login:focus { border-color: var(--accent); }
     .btn-login-submit { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
-    .btn-login-submit:hover { background-color: #1d4ed8; }
+    .btn-login-submit:hover { background-color: var(--accent-hover); }
     .login-err-msg { color: var(--red); font-size: 0.8rem; font-weight: 700; margin-top: 10px; display: none; }
 
     .admin-nav { background-color: var(--primary); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -50,19 +52,26 @@
     .form-control:focus { border-color: var(--accent); }
     textarea.form-control { font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.4; resize: vertical; }
 
-    .btn-action { padding: 10px 18px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .upload-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .file-upload-btn-wrapper { display: inline-flex; align-items: center; gap: 8px; }
+    .file-input-hidden { display: none; }
+    .btn-upload-trigger { background-color: #f1f5f9; color: #1e293b; border: 1.5px dashed #94a3b8; padding: 6px 14px; border-radius: 6px; font-size: 0.775rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+    .btn-upload-trigger:hover { background-color: #e2e8f0; border-color: var(--accent); color: var(--accent); }
+    .upload-status-badge { font-size: 0.75rem; color: var(--green); font-weight: 600; display: none; }
+
+    .btn-action { padding: 10px 18px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
     .btn-primary { background-color: var(--accent); color: white; }
-    .btn-primary:hover { background-color: #1d4ed8; }
+    .btn-primary:hover { background-color: var(--accent-hover); }
     .btn-secondary { background-color: #475569; color: white; }
     .btn-secondary:hover { background-color: #334155; }
     .btn-logout { background-color: var(--red); color: white; }
     .btn-logout:hover { background-color: #b91c1c; }
+
     .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
     .footer { text-align: center; padding: 14px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
-  <!-- LOGIN MODAL ADMIN -->
   <div id="adminLoginOverlay">
     <div class="login-card">
       <div style="font-size: 2.4rem; margin-bottom: 8px;">⚙️</div>
@@ -150,8 +159,16 @@
           </div>
         </div>
 
+        <!-- 📂 SECTION BANK SOAL (UPLOAD SOAL.JSON) -->
         <div class="form-group" style="margin-top: 14px;">
-          <label>Struktur Soal JSON (Array Soal Lengkap)</label>
+          <div class="upload-header-row">
+            <label>Struktur Soal JSON (Array Soal Lengkap)</label>
+            <div class="file-upload-btn-wrapper">
+              <input type="file" id="fileSoalInput" class="file-input-hidden" accept=".json" onchange="handleFileUpload(event, 'soal')">
+              <label for="fileSoalInput" class="btn-upload-trigger">📁 Upload File soal.json</label>
+              <span id="soalUploadStatus" class="upload-status-badge">✅ File Terbaca</span>
+            </div>
+          </div>
           <textarea id="soalJson" class="form-control" rows="12" placeholder='[
   {
     "name": "q1",
@@ -163,14 +180,24 @@
     ]
   }
 ]' required></textarea>
+          <span class="help-text">Anda bisa <strong>Upload file .json</strong> atau <strong>Paste teks JSON langsung</strong> di kotak atas.</span>
         </div>
 
+        <!-- 📂 SECTION KUNCI JAWABAN (UPLOAD KUNCI.JSON) -->
         <div class="form-group" style="margin-top: 14px;">
-          <label>Kunci Jawaban Otomatis</label>
+          <div class="upload-header-row">
+            <label>Kunci Jawaban Otomatis</label>
+            <div class="file-upload-btn-wrapper">
+              <input type="file" id="fileKunciInput" class="file-input-hidden" accept=".json,.txt" onchange="handleFileUpload(event, 'kunci')">
+              <label for="fileKunciInput" class="btn-upload-trigger">📁 Upload File kunci.json</label>
+              <span id="kunciUploadStatus" class="upload-status-badge">✅ Kunci Terbaca</span>
+            </div>
+          </div>
           <textarea id="kunciText" class="form-control" rows="4" placeholder="Format: q1:A, q2:B, q3:A,C, q4:{pair1:V1,pair2:V2}" required></textarea>
+          <span class="help-text">Mendukung format JSON: <code>{"q1":"A", "q2":["A","C"]}</code> atau format teks biasa: <code>q1:A, q2:B</code>.</span>
         </div>
 
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
           <button type="submit" id="btnSubmitForm" class="btn-action btn-primary">💾 Simpan Paket Ujian ke Spreadsheet</button>
           <button type="button" class="btn-action btn-secondary" onclick="resetForm()">Bersihkan Form</button>
         </div>
@@ -183,7 +210,7 @@
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQS4gz7Kwl1hw95QlyFsQFug-NQlNLG6C-dxV_EV9JAaQ1Z8zq_AeuPvaM-7p3NA82/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXMJAupaHR29GuFx5-7IECHTJ3p7Och8OgI_vBpkXXYypkRGqf6y0bS1VUTZxuCjY/exec";
 
     function checkAdminAuth() {
       const auth = sessionStorage.getItem("adminAuth");
@@ -251,6 +278,57 @@
       nextMonth.setMonth(now.getMonth() + 1);
       document.getElementById("jadwalMulai").value = now.toISOString().slice(0, 16);
       document.getElementById("jadwalSelesai").value = nextMonth.toISOString().slice(0, 16);
+    }
+
+    function handleFileUpload(event, type) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const content = e.target.result;
+
+        if (type === 'soal') {
+          try {
+            const parsed = JSON.parse(content);
+            document.getElementById("soalJson").value = JSON.stringify(parsed, null, 2);
+            
+            const badge = document.getElementById("soalUploadStatus");
+            badge.innerText = `✅ ${file.name} (${Array.isArray(parsed) ? parsed.length : (parsed.questions ? parsed.questions.length : 0)} Soal)`;
+            badge.style.display = "inline";
+          } catch (err) {
+            alert("File yang diupload bukan format JSON yang valid!");
+          }
+        } 
+        else if (type === 'kunci') {
+          try {
+            if (content.trim().startsWith("{")) {
+              const parsedKunci = JSON.parse(content);
+              const formattedList = [];
+              for (const [k, v] of Object.entries(parsedKunci)) {
+                if (Array.isArray(v)) {
+                  formattedList.push(`${k}:${v.join(",")}`);
+                } else if (typeof v === "object" && v !== null) {
+                  formattedList.push(`${k}:${JSON.stringify(v)}`);
+                } else {
+                  formattedList.push(`${k}:${v}`);
+                }
+              }
+              document.getElementById("kunciText").value = formattedList.join(", ");
+            } else {
+              document.getElementById("kunciText").value = content.trim();
+            }
+
+            const badge = document.getElementById("kunciUploadStatus");
+            badge.innerText = `✅ ${file.name} Terpasang`;
+            badge.style.display = "inline";
+          } catch (err) {
+            document.getElementById("kunciText").value = content.trim();
+          }
+        }
+      };
+
+      reader.readAsText(file);
     }
 
     async function saveExamPackage(e) {
@@ -340,8 +418,12 @@
             if (d.jadwal.jadwalMulai) document.getElementById("jadwalMulai").value = d.jadwal.jadwalMulai;
             if (d.jadwal.jadwalSelesai) document.getElementById("jadwalSelesai").value = d.jadwal.jadwalSelesai;
           }
-          if (d.soalJson) document.getElementById("soalJson").value = JSON.stringify(d.soalJson, null, 2);
-          if (d.kunciText) document.getElementById("kunciText").value = d.kunciText;
+          if (d.soalJson) {
+            document.getElementById("soalJson").value = JSON.stringify(d.soalJson, null, 2);
+          }
+          if (d.kunciText) {
+            document.getElementById("kunciText").value = d.kunciText;
+          }
           alert(`Paket ${kode} berhasil dimuat!`);
         } else {
           alert("Paket soal tidak ditemukan di Spreadsheet!");
@@ -353,6 +435,8 @@
 
     function resetForm() {
       document.getElementById("examPackageForm").reset();
+      document.getElementById("soalUploadStatus").style.display = "none";
+      document.getElementById("kunciUploadStatus").style.display = "none";
       setDefaultDates();
     }
 
