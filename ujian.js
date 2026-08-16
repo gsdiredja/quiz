@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 2. CEK SESI DI SPREADSHEET (APAKAH SUDAH PERNAH MEMULAI DI PERANGKAT LAIN)
+    // 2. CEK SESI DI SPREADSHEET
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -105,8 +105,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (sessionData.status === "found" && Array.isArray(sessionData.questionOrder) && sessionData.questionOrder.length > 0) {
         const orderMap = new Map();
         masterQuestions.forEach((q, idx) => {
-          const key = q.name || q.id || `q_${idx}`;
-          orderMap.set(String(key).trim().toLowerCase(), q);
+          const key = String(q.name || q.id || `q_${idx}`).trim().toLowerCase();
+          orderMap.set(key, q);
         });
 
         questionsData = [];
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // 3. JIKA SESI BARU (PERTAMA KALI BUKA UJIAN)
+    // 3. JIKA SESI BARU
     if (!sessionRestored) {
       questionsData = shuffleArray(masterQuestions);
       questionsData.forEach((q) => {
@@ -144,7 +144,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       currentQuestionIndex = 0;
       userAnswers = {};
       
-      // Simpan urutan acak awal ke Cloud setelah array soal dipastikan terisi
       await syncSessionToCloud();
     }
 
@@ -159,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// 🔄 SINKRONISASI DATA SESI KE GOOGLE SPREADSHEET
+// 🔄 SINKRONISASI KE GOOGLE SPREADSHEET (CLOUD AUTOSAVE)
 async function syncSessionToCloud() {
   if (!currentUsername || !cleanPaketId || !Array.isArray(questionsData) || questionsData.length === 0) {
     return;
@@ -183,7 +182,7 @@ async function syncSessionToCloud() {
       })
     });
   } catch (e) {
-    console.warn("Gagal autosave ke spreadsheet:", e);
+    console.warn("Gagal autosave:", e);
   }
 }
 
@@ -368,9 +367,9 @@ function selectRadioOption(qName, val, el) {
   if (input) input.checked = true;
 
   userAnswers[qName] = val;
-  syncSessionToCloud();
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function toggleCheckboxOption(qName, val, el) {
@@ -389,9 +388,9 @@ function toggleCheckboxOption(qName, val, el) {
     el.classList.add('selected');
   }
 
-  syncSessionToCloud();
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function saveMatchingOption(qName, pairId, val) {
@@ -399,18 +398,18 @@ function saveMatchingOption(qName, pairId, val) {
   if (val) userAnswers[qName][pairId] = val;
   else delete userAnswers[qName][pairId];
 
-  syncSessionToCloud();
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function saveEssayText(qName, text) {
   if (text.trim() !== "") userAnswers[qName] = text.trim();
   else delete userAnswers[qName];
 
-  syncSessionToCloud();
   renderNumberGrid();
   hideWarning();
+  syncSessionToCloud();
 }
 
 function isQuestionAnswered(qName) {
@@ -427,7 +426,7 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-// 🔒 PINDAH SOAL: SIMPAN INDEKS BARU KE CLOUD
+// 🔒 PINDAH SOAL: SIMPAN PROGRES & INDEKS BARU KE CLOUD
 async function nextQuestion() {
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
@@ -439,8 +438,9 @@ async function nextQuestion() {
   if (currentQuestionIndex < questionsData.length - 1) {
     currentQuestionIndex++;
     
-    // Kirim nomor aktif dan sisa waktu terbaru ke spreadsheet
-    syncSessionToCloud();
+    // Simpan ke Google Spreadsheet
+    await syncSessionToCloud();
+    
     showQuestion(currentQuestionIndex);
     
     const sidebar = document.getElementById("gridSidebar");
@@ -546,8 +546,13 @@ function confirmLogout() {
   }
 }
 
-function logout() {
+// 🔒 LOGOUT: Simpan data sebelum menutup halaman
+async function logout() {
   clearInterval(timerInterval);
+  try {
+    await syncSessionToCloud();
+  } catch (e) {}
+
   localStorage.removeItem("userData");
   window.location.href = "index.html";
 }
