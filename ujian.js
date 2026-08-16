@@ -601,16 +601,10 @@ function confirmLogout() {
 
 function logout() {
   clearInterval(timerInterval);
-  
-  if (currentUsername) {
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "logout", username: currentUsername }),
-    }).catch(() => {});
-  }
 
+  // 🔒 HAPUS fetch logout ke GAS agar status siswa TETAP "ONLINE_KODEPAKET" (Terkunci)
+  // Siswa tidak akan bisa login lagi dan akan muncul notifikasi: "Hubungi Admin/Proktor"
+  
   localStorage.removeItem("userData");
   window.location.href = "index.html";
 }
