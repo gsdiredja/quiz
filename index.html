@@ -3,81 +3,384 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CBT Portal - Masuk Ujian</title>
+  <title>Portal Ujian Online Terpadu - CBT AKM</title>
   <style>
     :root {
-      --primary: #0f172a;
+      --primary: #1e3a8a;
+      --primary-dark: #172554;
       --accent: #2563eb;
       --bg: #f8fafc;
-      --card: #ffffff;
-      --border: #cbd5e1;
-      --text: #1e293b;
-      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-focus: #3b82f6;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-light: #64748b;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; }
-    .portal-header { background-color: var(--primary); color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .brand-title { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
-    .nav-links { display: flex; gap: 8px; }
-    .nav-btn { color: #e2e8f0; text-decoration: none; font-size: 0.8rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s; }
-    .nav-btn:hover { background-color: rgba(255,255,255,0.1); color: white; }
-    .nav-btn.admin-link { background-color: #d97706; border-color: #d97706; color: white; }
-    .login-wrapper { display: flex; justify-content: center; align-items: center; padding: 40px 16px; flex: 1; }
-    .login-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px 28px; width: 100%; max-width: 420px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .login-title { text-align: center; margin-bottom: 24px; }
-    .login-title h2 { font-size: 1.35rem; color: var(--primary); font-weight: 800; }
-    .login-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.825rem; font-weight: 700; color: #334155; margin-bottom: 6px; }
-    .form-control { width: 100%; padding: 11px 14px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 0.9rem; outline: none; }
-    .form-control:focus { border-color: var(--accent); }
-    .btn-submit { width: 100%; padding: 12px; background-color: var(--accent); color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    .btn-submit:hover { background-color: #1d4ed8; }
-    .footer { text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* TOP BAR / HEADER KECIL */
+    .top-navbar {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+    }
+
+    .portal-nav {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background-color: #f1f5f9;
+      color: var(--primary);
+      border-color: #cbd5e1;
+    }
+
+    .nav-btn.admin-link {
+      background-color: #fffbeb;
+      border-color: #fde68a;
+      color: #b45309;
+    }
+
+    .nav-btn.admin-link:hover {
+      background-color: #fef3c7;
+    }
+
+    /* MAIN CONTAINER - DUA KOLOM */
+    .main-wrapper {
+      max-width: 1100px;
+      width: 100%;
+      margin: auto;
+      padding: 40px 20px;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    /* SISI KIRI: INFORMASI & PETUNJUK */
+    .intro-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .intro-badge {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #2563eb;
+      letter-spacing: 0.3px;
+    }
+
+    .intro-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #0f172a;
+    }
+
+    .intro-desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    /* KOTAK PETUNJUK */
+    .guideline-box {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-top: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .guideline-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .guideline-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #334155;
+      line-height: 1.45;
+    }
+
+    .guideline-list li {
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .guideline-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    /* SISI KANAN: FORM LOGIN */
+    .login-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+
+    .login-card-header {
+      margin-bottom: 22px;
+    }
+
+    .login-card-header h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .login-card-header p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background-color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    select.form-control {
+      background-color: #f1f5f9;
+      border-color: #e2e8f0;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .form-control:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      background-color: #ffffff;
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-login-submit:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-login-submit:active {
+      transform: translateY(1px);
+    }
+
+    .btn-login-submit:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* FOOTER */
+    .portal-footer {
+      text-align: center;
+      padding: 16px 20px;
+      font-size: 0.825rem;
+      color: var(--text-light);
+      background-color: #ffffff;
+      border-top: 1px solid var(--border);
+    }
+
+    .portal-footer a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 700;
+      transition: color 0.2s;
+    }
+
+    .portal-footer a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    /* RESPONSIVE SMARTPHONE (Layar <= 868px) */
+    @media (max-width: 868px) {
+      .main-wrapper {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 24px 16px;
+      }
+
+      .intro-title {
+        font-size: 1.6rem;
+      }
+
+      .login-card {
+        padding: 24px 20px;
+      }
+    }
   </style>
 </head>
 <body>
-  <header class="portal-header">
-    <div class="brand-title">🏛️ CBT ASESMEN PORTAL</div>
-    <nav class="nav-links">
+
+  <!-- TOP HEADER -->
+  <header class="top-navbar">
+    <div class="brand-logo">
+      🏛️ CBT ASESMEN PORTAL
+    </div>
+    <nav class="portal-nav">
       <a href="proktor.html" class="nav-btn">🛡️ Panel Proktor</a>
       <a href="admin.html" class="nav-btn admin-link">⚙️ Panel Admin</a>
     </nav>
   </header>
 
-  <main class="login-wrapper">
-    <div class="login-box">
-      <div class="login-title">
-        <h2>Masuk Ruang Ujian</h2>
-        <p>Gunakan Nomor Peserta / NISN yang terdaftar</p>
+  <!-- MAIN AREA (2 KOLOM) -->
+  <main class="main-wrapper">
+    
+    <!-- KOLOM KIRI -->
+    <section class="intro-section">
+      <div class="intro-badge">Asesmen Kompetensi Minimum (AKM)</div>
+      <h1 class="intro-title">Selamat Datang di Portal<br>Ujian Online Terpadu</h1>
+      <p class="intro-desc">
+        Silakan persiapkan kredensial akun Anda (NISN dan Password) yang telah dibagikan oleh Proktor/Guru untuk memulai pelaksanaan ujian hari ini.
+      </p>
+
+      <!-- PETUNJUK PENGERJAAN -->
+      <div class="guideline-box">
+        <div class="guideline-title">📌 Petunjuk Pengerjaan Ujian</div>
+        <ul class="guideline-list">
+          <li>Pastikan koneksi internet Anda stabil sebelum menekan tombol masuk.</li>
+          <li>Wajib menjawab soal aktif terlebih dahulu sebelum berpindah ke nomor berikutnya.</li>
+          <li>Akses login terkunci pada 1 perangkat tunggal demi menjaga integritas data ujian.</li>
+          <li>Klik tombol <strong>"Selesaikan Ujian"</strong> jika seluruh soal telah dikerjakan.</li>
+        </ul>
       </div>
+    </section>
 
-      <form id="loginForm">
-        <div class="form-group">
-          <label>Pilih Mata Pelajaran / Paket Ujian</label>
-          <select id="jenisUjian" class="form-control" required>
-            <option value="" disabled selected>Memuat jadwal ujian...</option>
-          </select>
+    <!-- KOLOM KANAN -->
+    <section class="login-section">
+      <div class="login-card">
+        <div class="login-card-header">
+          <h2>Masuk Ke Portal</h2>
+          <p>Lengkapi formulir di bawah ini untuk memulai sesi</p>
         </div>
 
-        <div class="form-group">
-          <label>NISN / Nomor Peserta</label>
-          <input type="text" id="username" class="form-control" placeholder="Ketikkan NISN..." required autocomplete="off">
-        </div>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="jenisUjian">Paket Soal Ujian</label>
+            <select id="jenisUjian" class="form-control" required>
+              <option value="" disabled selected>Memuat jadwal ujian aktif...</option>
+            </select>
+          </div>
 
-        <div class="form-group">
-          <label>Password Peserta</label>
-          <input type="password" id="password" class="form-control" placeholder="Ketikkan password..." required>
-        </div>
+          <div class="form-group">
+            <label for="username">Username / NISN</label>
+            <input type="text" id="username" class="form-control" placeholder="Masukkan NISN Anda" required autocomplete="off">
+          </div>
 
-        <button type="submit" class="btn-submit">Mulai Ujian ➡️</button>
-        <div id="alertBox" style="display:none;"></div>
-      </form>
-    </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" class="btn-login-submit">
+            Masuk Ujian Sekarang ➔
+          </button>
+
+          <!-- BOX NOTIFIKASI ERROR/WARNING -->
+          <div id="alertBox" style="display: none;"></div>
+        </form>
+      </div>
+    </section>
+
   </main>
 
-  <footer class="footer">
-    © 2026 Computer Based Testing System • Pusmenjar Modelling
+  <!-- FOOTER -->
+  <footer class="portal-footer">
+    © 2026 Portal Ujian Online Berbasis Komputer • Design & System Developed by <a href="https://kodi.web.id/aboutme" target="_blank" rel="noopener noreferrer">Agus Tjakra</a>
   </footer>
 
   <script src="app.js"></script>
