@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const alertBox = document.getElementById("alertBox");
   const jenisUjianSelect = document.getElementById("jenisUjian");
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7y6F-755S42rE1vfNFccjugXs3DsXO9sdvBjE90Ld7LgzI1VSmoJzXz4uWivKglVY/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
 
   // 🔄 Tarik Paket Ujian Aktif
   async function loadActiveExams() {
