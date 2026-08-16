@@ -2,7 +2,7 @@ let currentQuestionIndex = 0;
 let questionsData = [];
 let userAnswers = {};
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTbBkt0tpJElkGpTkyJYceGvEu8WgUbspouuvtJCwO2VkgjMN1dtnJYjJdEOD38HE/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7y6F-755S42rE1vfNFccjugXs3DsXO9sdvBjE90Ld7LgzI1VSmoJzXz4uWivKglVY/exec";
 
 let EXAM_DURATION_MINUTES = 60;
 let totalSeconds = EXAM_DURATION_MINUTES * 60;
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 2. CEK SESI DI SPREADSHEET
+    // 2. CEK SESI DI SPREADSHEET (CLOUD RESTORE)
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // 3. JIKA SESI BARU
+    // 3. JIKA SESI BARU (PERTAMA KALI BUKA UJIAN)
     if (!sessionRestored) {
       questionsData = shuffleArray(masterQuestions);
       questionsData.forEach((q) => {
@@ -181,9 +181,7 @@ async function syncSessionToCloud() {
         userAnswers: userAnswers
       })
     });
-  } catch (e) {
-    console.warn("Gagal autosave:", e);
-  }
+  } catch (e) {}
 }
 
 function startTimer() {
@@ -369,7 +367,6 @@ function selectRadioOption(qName, val, el) {
   userAnswers[qName] = val;
   renderNumberGrid();
   hideWarning();
-  syncSessionToCloud();
 }
 
 function toggleCheckboxOption(qName, val, el) {
@@ -390,7 +387,6 @@ function toggleCheckboxOption(qName, val, el) {
 
   renderNumberGrid();
   hideWarning();
-  syncSessionToCloud();
 }
 
 function saveMatchingOption(qName, pairId, val) {
@@ -400,7 +396,6 @@ function saveMatchingOption(qName, pairId, val) {
 
   renderNumberGrid();
   hideWarning();
-  syncSessionToCloud();
 }
 
 function saveEssayText(qName, text) {
@@ -409,7 +404,6 @@ function saveEssayText(qName, text) {
 
   renderNumberGrid();
   hideWarning();
-  syncSessionToCloud();
 }
 
 function isQuestionAnswered(qName) {
@@ -426,7 +420,7 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-// 🔒 PINDAH SOAL: SIMPAN PROGRES & INDEKS BARU KE CLOUD
+// 🔒 PINDAH SOAL: SIMPAN PROGRES SECARA REALTIME KE CLOUD
 async function nextQuestion() {
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
@@ -439,7 +433,7 @@ async function nextQuestion() {
     currentQuestionIndex++;
     
     // Simpan ke Google Spreadsheet
-    await syncSessionToCloud();
+    syncSessionToCloud();
     
     showQuestion(currentQuestionIndex);
     
@@ -546,9 +540,11 @@ function confirmLogout() {
   }
 }
 
-// 🔒 LOGOUT: Simpan data sebelum menutup halaman
+// 🔒 LOGOUT: Bersihkan sesi browser lokal tanpa mereset status di server
 async function logout() {
   clearInterval(timerInterval);
+  
+  // Kirim snapshot terakhir sebelum keluar
   try {
     await syncSessionToCloud();
   } catch (e) {}
