@@ -1,0 +1,160 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Memastikan body selalu menutupi layar dan memosisikan isi ke tengah (Flexbox Center) */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.bg-light {
+  background-color: #f4f6f9;
+  color: #333333;
+  display: flex;
+  align-items: center; /* Mengetengahkan secara vertikal */
+  justify-content: center; /* Mengetengahkan secara horizontal */
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Container utama login - Dijamin selalu di tengah untuk Tablet & PC */
+.login-container {
+  width: 100%;
+  max-width: 440px; /* Lebar ideal kartu login */
+  margin: auto; /* Memastikan posisi tetap rata tengah di tablet & PC */
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.03);
+  padding: 32px 28px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+/* Header Brand */
+.brand-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.brand-icon {
+  width: 56px;
+  height: 56px;
+  background-color: #eef2ff;
+  color: #4f46e5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: #6366f1;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+select.form-control {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+/* Status Alert */
+.status-alert {
+  font-size: 0.825rem;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background-color: #f1f5f9;
+  color: #475569;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+/* Primary Button */
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #4f46e5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* --- PERBAIKAN FOOTER & UKURAN FONT --- */
+.card-footer {
+  margin-top: 24px;
+  text-align: center;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+}
+
+.card-footer p {
+  font-size: 0.7rem; /* Diperkecil agar lebih proporsional & tidak dominan */
+  color: #94a3b8;
+  line-height: 1.4;
+  font-weight: 400;
+}

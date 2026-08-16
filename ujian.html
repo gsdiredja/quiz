@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CBT AKM - Portal Ujian Berbasis Komputer</title>
+  <style>
+  :root {
+    --akm-blue: #1e3a8a;
+    --akm-header: #0f172a;
+    --akm-bg: #f1f5f9;
+    --akm-border: #cbd5e1;
+    --akm-green: #16a34a;
+    --footer-height: 60px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--akm-bg);
+    color: #1e293b;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 1. HEADER UTAMA AKM */
+  .akm-navbar {
+    background-color: var(--akm-header);
+    color: #ffffff;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    min-height: 50px;
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-title h1 {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .brand-title span {
+    font-size: 0.7rem;
+    background-color: #2563eb;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .timer-badge {
+    background-color: #ef4444;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace;
+  }
+
+  .font-sizer {
+    display: flex;
+    background-color: #334155;
+    border-radius: 6px;
+    padding: 2px;
+  }
+
+  .font-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+
+  .font-btn:hover { background-color: #475569; }
+
+  .btn-logout-header {
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  /* 2. SUB BAR INFO SISWA */
+  .sub-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--akm-border);
+    padding: 6px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    min-height: 36px;
+    flex-shrink: 0;
+    gap: 10px;
+  }
+
+  .user-details strong { color: var(--akm-blue); }
+
+  .btn-grid-toggle {
+    background-color: var(--akm-blue);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* 3. MAIN CONTAINER */
+  .main-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    padding-bottom: var(--footer-height); 
+  }
+
+  .exam-panel {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    margin: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--akm-border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--akm-blue);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    color: var(--akm-blue);
+  }
+
+  /* OPSI JAWABAN UMUM & CHECKBOX */
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+
+  .option-item:hover {
+    border-color: #94a3b8;
+    background-color: #f8fafc;
+  }
+
+  .option-badge {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    background-color: #f1f5f9;
+    border: 1.5px solid #94a3b8;
+    color: #334155;
+    border-radius: 6px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .option-item.selected {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+  }
+
+  .option-item.selected .option-badge {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+  }
+
+  .form-control {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .form-control:focus {
+    border-color: #2563eb;
+  }
+
+  .essay-box {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1.5px solid #cbd5e1;
+    outline: none;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .essay-box:focus {
+    border-color: #2563eb;
+  }
+
+  /* 4. SIDEBAR NAVIGASI GRID */
+  .grid-sidebar {
+    width: 280px;
+    background-color: #ffffff;
+    border-left: 1px solid var(--akm-border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    transition: transform 0.3s ease;
+  }
+
+  .grid-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    border-bottom: 1px solid var(--akm-border);
+    padding-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .number-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .btn-num {
+    aspect-ratio: 1;
+    border: 1px solid var(--akm-border);
+    background-color: #f8fafc;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-num.active { border: 2px solid var(--akm-blue); background-color: #dbeafe; color: var(--akm-blue); }
+  .btn-num.answered { background-color: var(--akm-green); color: white; border-color: var(--akm-green); }
+
+  .grid-legend {
+    margin-top: 10px;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-box { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #cbd5e1; }
+
+  /* 5. FOOTER NAVIGASI */
+  .akm-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--footer-height);
+    background-color: #ffffff;
+    border-top: 2px solid var(--akm-border);
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 999;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+  }
+
+  .btn-action {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-prev { background-color: #64748b; color: white; }
+  .btn-next { background-color: var(--akm-blue); color: white; }
+  .btn-submit { background-color: var(--akm-green); color: white; }
+  .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* RESPONSIVE SMARTPHONE (Layar <= 768px) */
+  @media (max-width: 768px) {
+    .akm-navbar { padding: 6px 10px; }
+    .brand-title h1 { font-size: 0.85rem; }
+    .brand-title span, .font-sizer { display: none; }
+    .sub-bar { font-size: 0.725rem; padding: 4px 10px; }
+    .user-details { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+    .exam-panel { margin: 4px; padding: 10px; }
+    .option-item { padding: 8px 10px; font-size: 0.875rem; }
+
+    .grid-sidebar {
+      position: fixed;
+      right: 0; 
+      top: 0;
+      bottom: 0;
+      width: 80%;
+      max-width: 300px;
+      z-index: 1000;
+      box-shadow: -4px 0 15px rgba(0,0,0,0.3);
+      transform: translateX(100%);
+    }
+
+    .grid-sidebar.open { transform: translateX(0); }
+    .akm-footer { padding: 0 8px; }
+    .btn-action { padding: 8px 10px; font-size: 0.75rem; }
+    #questionProgress { font-size: 0.75rem !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- HEADER UTAMA -->
+  <header class="akm-navbar">
+    <div class="brand-title">
+      <h1>CBT AKM SYSTEM</h1>
+      <span>PUSMENJAR MODELLING</span>
+    </div>
+
+    <div class="header-controls">
+      <div class="font-sizer">
+        <button class="font-btn" onclick="changeFontSize('small')">A-</button>
+        <button class="font-btn" onclick="changeFontSize('medium')" style="font-size:1.05rem;">A</button>
+        <button class="font-btn" onclick="changeFontSize('large')" style="font-size:1.2rem;">A+</button>
+      </div>
+
+      <div class="timer-badge">
+        ⏱️ <span id="timerDisplay">00:60:00</span>
+      </div>
+
+      <button class="btn-logout-header" onclick="confirmLogout()">Keluar 🚪</button>
+    </div>
+  </header>
+
+  <!-- SUB BAR INFO SISWA -->
+  <section class="sub-bar">
+    <div class="user-details" id="userInfo">
+      <!-- Info Siswa Dimuat via JS -->
+    </div>
+    <button class="btn-grid-toggle" onclick="toggleSidebar()">
+      📱 Daftar Soal
+    </button>
+  </section>
+
+  <!-- MAIN DUAL PANEL -->
+  <main class="main-container">
+    <div class="exam-panel" id="examPanel">
+      <div class="question-header">
+        <span id="questionTitle">Soal Nomor 1</span>
+        <span id="questionTypeBadge" style="font-size:0.75rem; background:#e2e8f0; padding:2px 8px; border-radius:12px; color:#475569;">Pilihan Ganda</span>
+      </div>
+
+      <div id="questionsContainer">
+        <p style="color: #64748b;">Memuat soal ujian...</p>
+      </div>
+    </div>
+
+    <aside class="grid-sidebar" id="gridSidebar">
+      <div class="grid-title">PETA NAVIGASI SOAL</div>
+      <div class="number-grid" id="numberGrid">
+        <!-- Grid Nomor Soal Dimuat via JS -->
+      </div>
+
+      <div class="grid-legend">
+        <div class="legend-item"><div class="legend-box" style="background-color: var(--akm-green);"></div> Sudah Dijawab</div>
+        <div class="legend-item"><div class="legend-box" style="background-color: #dbeafe; border-color: var(--akm-blue);"></div> Soal Aktif</div>
+        <div class="legend-item"><div class="legend-box" style="background-color: #f8fafc;"></div> Belum Dijawab</div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- FOOTER NAVIGASI (FIXED POSITION) -->
+  <footer class="akm-footer">
+    <button id="btnPrev" class="btn-action btn-prev" onclick="prevQuestion()">⬅️ Sebelumnya</button>
+    
+    <div id="questionProgress" style="font-weight: 700; color: #475569; font-size: 0.85rem;">Soal 1 dari ...</div>
+
+    <button id="btnNext" class="btn-action btn-next" onclick="nextQuestion()">Selanjutnya ➡️</button>
+    <button id="btnSubmitExam" class="btn-action btn-submit" onclick="submitExam()" style="display: none;">Selesaikan Ujian ✔️</button>
+  </footer>
+
+  <script src="ujian.js"></script>
+</body>
+</html>

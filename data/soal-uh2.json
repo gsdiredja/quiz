@@ -1,0 +1,104 @@
+[
+  {
+    "id": 1,
+    "type": "radio",
+    "question": "Sebutkan salah satu fungsi dari sistem operasi komputer!",
+    "image": "./images/soal1.png",
+    "options": [
+      {
+        "text": "Mengelola sumber daya perangkat keras (hardware)",
+        "image": ""
+      },
+      {
+        "text": "Membersihkan debu pada kipas CPU",
+        "image": ""
+      },
+      {
+        "text": "Menghemat konsumsi listrik monitor secara manual",
+        "image": ""
+      },
+      {
+        "text": "Meningkatkan kecepatan jaringan internet secara otomatis",
+        "image": "./images/soal1.png"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "type": "checkbox",
+    "question": "Manakah di bawah ini yang termasuk ke dalam perangkat keras masukan (input device)? (Pilih lebih dari satu)",
+    "image": "",
+    "options": [
+      {
+        "text": "Keyboard",
+        "image": ""./images/soal1.png
+      },
+      {
+        "text": "Mouse",
+        "image": ""
+      },
+      {
+        "text": "Printer",
+        "image": ""
+      },
+      {
+        "text": "Monitor",
+        "image": ""
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "type": "essay",
+    "question": "Jelaskan secara singkat perbedaan antara RAM dan Harddisk (storage) dalam sistem komputer!",
+    "image": "./images/soal1.png"
+  },
+  {
+    "id": 4,
+    "type": "radio",
+    "question": "Protokol standar yang digunakan untuk mengrimkan halaman web dari server ke browser adalah...",
+    "image": "",
+    "options": [
+      {
+        "text": "HTTP / HTTPS",
+        "image": ""
+      },
+      {
+        "text": "FTP",
+        "image": ""
+      },
+      {
+        "text": "SMTP",
+        "image": ""
+      },
+      {
+        "text": "POP3",
+        "image": ""
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "type": "checkbox",
+    "question": "Pilihlah bahasa pemrograman yang biasa digunakan untuk pengembangan sisi depan (frontend) web! (Pilih lebih dari satu)",
+    "image": "",
+    "options": [
+      {
+        "text": "HTML",
+        "image": ""
+      },
+      {
+        "text": "CSS",
+        "image": ""
+      },
+      {
+        "text": "JavaScript",
+        "image": ""
+      },
+      {
+        "text": "SQL",
+        "image": ""
+      }
+    ]
+  }
+]
