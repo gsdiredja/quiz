@@ -16,238 +16,78 @@
       --green: #16a34a;
       --red: #dc2626;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ================= LOGIN OVERLAY ================= */
-    #loginOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.92);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      backdrop-filter: blur(4px);
-    }
-    .login-card {
-      background: white;
-      padding: 32px 28px;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      text-align: center;
-    }
+    #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.92); display: flex; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px); }
+    .login-card { background: white; padding: 32px 28px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); text-align: center; }
     .login-card h2 { font-size: 1.3rem; margin-bottom: 6px; color: var(--primary); }
     .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
     .form-group { margin-bottom: 14px; text-align: left; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: var(--text); }
-    .form-control-login {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
+    .form-control-login { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; }
     .form-control-login:focus { border-color: var(--accent); }
-    .btn-login-submit {
-      width: 100%;
-      padding: 10px;
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-    }
+    .btn-login-submit { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
     .btn-login-submit:hover { background-color: #1d4ed8; }
-    .login-err-msg {
-      color: var(--red);
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-top: 10px;
-      display: none;
-    }
+    .login-err-msg { color: var(--red); font-size: 0.8rem; font-weight: 700; margin-top: 10px; display: none; }
 
-    /* ================= NAVBAR ================= */
-    .proktor-nav {
-      background-color: var(--primary);
-      color: white;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    .proktor-nav { background-color: var(--primary); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .brand-title { display: flex; align-items: center; gap: 10px; }
     .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
     .badge-proktor { background-color: var(--accent); font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
-
     .nav-actions { display: flex; align-items: center; gap: 10px; }
     .user-tag { font-size: 0.8rem; color: #94a3b8; }
     .user-tag strong { color: white; }
 
     .main-container { max-width: 1250px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
+    .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* CARDS */
-    .card {
-      background: var(--card);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    }
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* KONTROL PAKET UJIAN */
-    .exam-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 12px;
-    }
-    .exam-box {
-      border: 1px solid var(--border);
-      padding: 12px 16px;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8fafc;
-    }
+    .exam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .exam-box { border: 1px solid var(--border); padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
     .exam-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
     .exam-info p { font-size: 0.75rem; color: var(--text-muted); }
-
-    .btn-toggle-status {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: none;
-      font-weight: 700;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
+    .btn-toggle-status { padding: 6px 12px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
     .status-open { background: #dcfce7; color: var(--green); border: 1px solid #86efac; }
     .status-close { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
 
-    /* FILTER & SEARCH BAR */
-    .filter-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .filter-select, .search-input {
-      padding: 8px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.85rem;
-      outline: none;
-    }
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .filter-select, .search-input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.85rem; outline: none; }
     .filter-select { background: white; cursor: pointer; min-width: 160px; }
     .search-input { flex: 1; min-width: 220px; }
 
-    /* BUTTONS */
-    .btn-action {
-      padding: 8px 14px;
-      border-radius: 6px;
-      border: none;
-      font-weight: 700;
-      font-size: 0.825rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .btn-action { padding: 8px 14px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.825rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     .btn-print { background-color: #0f172a; color: white; }
     .btn-print:hover { background-color: #334155; }
     .btn-refresh { background-color: var(--accent); color: white; }
     .btn-logout { background-color: var(--red); color: white; }
     .btn-logout:hover { background-color: #b91c1c; }
 
-    /* TABEL MONITORING & LAPORAN */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     th { background: #f1f5f9; text-align: left; padding: 12px 10px; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
     td { padding: 10px; border-bottom: 1px solid var(--border); }
     tr:hover { background-color: #f8fafc; }
 
-    .badge-status {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
+    .badge-status { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
     .badge-online { background-color: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
     .badge-offline { background-color: #f1f5f9; color: #64748b; }
-    .badge-nilai {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: #1e3a8a;
-      background: #eff6ff;
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid #bfdbfe;
-    }
-
-    .btn-reset {
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
+    .badge-nilai { font-size: 0.95rem; font-weight: 800; color: #1e3a8a; background: #eff6ff; padding: 2px 8px; border-radius: 4px; border: 1px solid #bfdbfe; }
+    .btn-reset { background-color: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
     .btn-reset:hover { background-color: #dc2626; }
 
-    /* KOP LAPORAN CETAK */
     .print-header { display: none; }
 
-    /* 🖨️ CETAK / PDF RULES */
     @media print {
       body { background: white; color: black; font-size: 10pt; }
-      #loginOverlay, .proktor-nav, .card:first-child, .filter-bar, .btn-action, .btn-reset, .footer, .badge-proktor {
-        display: none !important;
-      }
+      #loginOverlay, .proktor-nav, .card:first-child, .filter-bar, .btn-action, .btn-reset, .footer, .badge-proktor { display: none !important; }
       .main-container { max-width: 100%; margin: 0; padding: 0; }
       .card { border: none; box-shadow: none; padding: 0; }
       .card-title { display: none; }
-
-      .print-header {
-        display: block !important;
-        text-align: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid black;
-        padding-bottom: 10px;
-      }
+      .print-header { display: block !important; text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 10px; }
       .print-header h2 { font-size: 14pt; font-weight: bold; text-transform: uppercase; }
       .print-header p { font-size: 10pt; margin-top: 4px; }
-      .print-meta {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 12px;
-        font-size: 9.5pt;
-        font-weight: bold;
-      }
-
+      .print-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 9.5pt; font-weight: bold; }
       table { width: 100%; border: 1px solid #000; font-size: 9.5pt; }
       th, td { border: 1px solid #000 !important; padding: 6px 8px; }
       th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
@@ -260,8 +100,7 @@
   </style>
 </head>
 <body>
-
-  <!-- 🔒 LOGIN OVERLAY MODAL -->
+  <!-- LOGIN MODAL PROKTOR -->
   <div id="loginOverlay">
     <div class="login-card">
       <div style="font-size: 2.2rem; margin-bottom: 8px;">🛡️</div>
@@ -273,19 +112,16 @@
           <label>Username Proktor</label>
           <input type="text" id="proktorUser" class="form-control-login" placeholder="Username..." required autocomplete="off">
         </div>
-
         <div class="form-group">
           <label>Password</label>
           <input type="password" id="proktorPass" class="form-control-login" placeholder="Password..." required>
         </div>
-
         <button type="submit" class="btn-login-submit">Masuk Dashboard ➡️</button>
         <div id="loginErrMsg" class="login-err-msg">⚠️ Username atau Password salah!</div>
       </form>
     </div>
   </div>
 
-  <!-- NAVBAR -->
   <header class="proktor-nav">
     <div class="brand-title">
       <h1>CBT CONTROL & REPORT PANEL</h1>
@@ -299,8 +135,6 @@
   </header>
 
   <main class="main-container">
-
-    <!-- 1. KONTROL PAKET UJIAN -->
     <div class="card">
       <div class="card-title">
         <span>📡 Kontrol Akses Paket Ujian</span>
@@ -311,10 +145,7 @@
       </div>
     </div>
 
-    <!-- 2. TABEL MONITORING DAN REKAP LAPORAN NILAI -->
     <div class="card">
-      
-      <!-- KOP CETAK RESMI (HANYA SAAT CETAK / PDF) -->
       <div class="print-header">
         <h2>LAPORAN HASIL ASESMEN & UJIAN BERBASIS KOMPUTER (CBT)</h2>
         <p>REKAPITULASI NILAI DAN STATUS PENYELESAIAN PESERTA DIDIK</p>
@@ -329,22 +160,17 @@
       <div class="card-title">
         <span>👥 Monitoring & Laporan Nilai Peserta</span>
         <div style="display: flex; gap: 8px;">
-          <button class="btn-action btn-print" onclick="printReport()">
-            🖨️ Cetak / Simpan PDF
-          </button>
+          <button class="btn-action btn-print" onclick="printReport()">🖨️ Cetak / Simpan PDF</button>
         </div>
       </div>
 
-      <!-- FILTER BAR -->
       <div class="filter-bar">
         <select id="filterKelas" class="filter-select" onchange="filterStudents()">
           <option value="">-- Semua Kelas --</option>
         </select>
-
         <select id="filterPaket" class="filter-select" onchange="filterStudents()">
           <option value="">-- Semua Paket Ujian --</option>
         </select>
-
         <input type="text" id="searchStudent" class="search-input" placeholder="🔍 Cari NISN atau Nama Siswa..." oninput="filterStudents()">
       </div>
 
@@ -370,9 +196,7 @@
           </tbody>
         </table>
       </div>
-
     </div>
-
   </main>
 
   <footer class="footer">
@@ -380,18 +204,10 @@
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
-    
-    // 🔑 KREDENSIAL PROKTOR (Default: proktor / proktor123 ATAU admin / admin123)
-    const VALID_PROCTOR_ACCOUNTS = {
-      "proktor": "proktor123",
-      "admin": "admin123"
-    };
-
+    const SCRIPT_URL = "https://script.google.com/macros/library/d/1VwoqJXTgca_joEHZU5JR8-I3yhzrF7aA_-vXzfASdE9bQvZD_bv2KkgL/7";
     let allStudentsData = [];
     let allExamsData = [];
 
-    // ================= AUTENTIKASI PROKTOR =================
     function checkProktorAuth() {
       const auth = sessionStorage.getItem("proktorAuth");
       const overlay = document.getElementById("loginOverlay");
@@ -399,37 +215,59 @@
 
       if (auth) {
         overlay.style.display = "none";
-        nameTag.innerText = auth.toUpperCase();
+        nameTag.innerText = sessionStorage.getItem("proktorNama") || auth.toUpperCase();
         loadProktorData();
       } else {
         overlay.style.display = "flex";
       }
     }
 
-    function handleProktorLogin(e) {
+    async function handleProktorLogin(e) {
       e.preventDefault();
       const u = document.getElementById("proktorUser").value.trim().toLowerCase();
       const p = document.getElementById("proktorPass").value.trim();
       const errMsg = document.getElementById("loginErrMsg");
+      const btn = e.target.querySelector("button[type='submit']");
 
-      if (VALID_PROCTOR_ACCOUNTS[u] && VALID_PROCTOR_ACCOUNTS[u] === p) {
-        sessionStorage.setItem("proktorAuth", u);
-        errMsg.style.display = "none";
-        document.getElementById("proktorLoginForm").reset();
-        checkProktorAuth();
-      } else {
+      btn.innerText = "Memverifikasi...";
+      btn.disabled = true;
+      errMsg.style.display = "none";
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "authpetugas", username: u, password: p, role: "PROKTOR" })
+        });
+
+        const res = await response.json();
+        if (res.status === "success") {
+          sessionStorage.setItem("proktorAuth", u);
+          sessionStorage.setItem("proktorNama", res.nama || u);
+          document.getElementById("proktorLoginForm").reset();
+          checkProktorAuth();
+        } else {
+          errMsg.innerText = "⚠️ " + (res.message || "Username atau Password salah!");
+          errMsg.style.display = "block";
+        }
+      } catch (err) {
+        errMsg.innerText = "⚠️ Gagal terhubung ke server Google Apps Script!";
         errMsg.style.display = "block";
+      } finally {
+        btn.innerText = "Masuk Dashboard ➡️";
+        btn.disabled = false;
       }
     }
 
     function handleProktorLogout() {
-      if (confirm("Apakah Anda yakin ingin keluar dari Panel Proktor?")) {
+      if (confirm("Keluar dari Panel Monitoring Proktor?")) {
         sessionStorage.removeItem("proktorAuth");
-        checkProktorAuth();
+        sessionStorage.removeItem("proktorNama");
+        window.location.href = "index.html";
       }
     }
 
-    // ================= DATA FETCHER =================
     async function loadProktorData() {
       if (!sessionStorage.getItem("proktorAuth")) return;
 
@@ -442,7 +280,6 @@
         });
 
         const result = await response.json();
-
         if (result.status === "success") {
           allStudentsData = result.students || [];
           allExamsData = result.exams || [];
@@ -519,7 +356,6 @@
 
     function renderStudents(students) {
       const tbody = document.getElementById("studentTableBody");
-
       if (students.length === 0) {
         tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;">Data siswa tidak ditemukan sesuai filter.</td></tr>`;
         return;
@@ -605,6 +441,7 @@
       document.getElementById("printKelasTxt").innerText = kelasText;
       document.getElementById("printPaketTxt").innerText = paketText;
       document.getElementById("printDateTxt").innerText = dateStr;
+      document.getElementById("printMetaInfo").style.display = "flex";
 
       window.print();
     }
