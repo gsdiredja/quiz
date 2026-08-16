@@ -20,7 +20,64 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* NAVBAR */
+    /* ================= LOGIN OVERLAY ================= */
+    #loginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.92);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+    .login-card {
+      background: white;
+      padding: 32px 28px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .login-card h2 { font-size: 1.3rem; margin-bottom: 6px; color: var(--primary); }
+    .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
+    .form-group { margin-bottom: 14px; text-align: left; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: var(--text); }
+    .form-control-login {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-control-login:focus { border-color: var(--accent); }
+    .btn-login-submit {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-login-submit:hover { background-color: #1d4ed8; }
+    .login-err-msg {
+      color: var(--red);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* ================= NAVBAR ================= */
     .proktor-nav {
       background-color: var(--primary);
       color: white;
@@ -34,9 +91,13 @@
     .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
     .badge-proktor { background-color: var(--accent); font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
 
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .user-tag { font-size: 0.8rem; color: #94a3b8; }
+    .user-tag strong { color: white; }
+
     .main-container { max-width: 1250px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
 
-    /* CARD */
+    /* CARDS */
     .card {
       background: var(--card);
       border-radius: 10px;
@@ -112,11 +173,12 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      text-decoration: none;
     }
     .btn-print { background-color: #0f172a; color: white; }
     .btn-print:hover { background-color: #334155; }
     .btn-refresh { background-color: var(--accent); color: white; }
+    .btn-logout { background-color: var(--red); color: white; }
+    .btn-logout:hover { background-color: #b91c1c; }
 
     /* TABEL MONITORING & LAPORAN */
     .table-responsive { overflow-x: auto; }
@@ -156,13 +218,13 @@
     }
     .btn-reset:hover { background-color: #dc2626; }
 
-    /* KOP LAPORAN CETAK (HANYA MUNCUL DI PRINT / PDF) */
+    /* KOP LAPORAN CETAK */
     .print-header { display: none; }
 
-    /* 🖨️ ATURAN KHUSUS CETAK & PDF (@media print) */
+    /* 🖨️ CETAK / PDF RULES */
     @media print {
       body { background: white; color: black; font-size: 10pt; }
-      .proktor-nav, .card:first-child, .filter-bar, .btn-action, .btn-reset, .footer, .badge-proktor {
+      #loginOverlay, .proktor-nav, .card:first-child, .filter-bar, .btn-action, .btn-reset, .footer, .badge-proktor {
         display: none !important;
       }
       .main-container { max-width: 100%; margin: 0; padding: 0; }
@@ -191,7 +253,7 @@
       th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
       .badge-nilai { background: none; border: none; color: black; font-weight: bold; padding: 0; }
       .badge-status { border: none; background: none; color: black; font-weight: normal; }
-      .th-aksi, .td-aksi { display: none !important; } /* Sembunyikan kolom tombol aksi */
+      .th-aksi, .td-aksi { display: none !important; }
     }
 
     .footer { text-align: center; padding: 14px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
@@ -199,13 +261,41 @@
 </head>
 <body>
 
+  <!-- 🔒 LOGIN OVERLAY MODAL -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">🛡️</div>
+      <h2>Login Proktor</h2>
+      <p>Masukkan kredensial pengawas / proktor</p>
+
+      <form id="proktorLoginForm" onsubmit="handleProktorLogin(event)">
+        <div class="form-group">
+          <label>Username Proktor</label>
+          <input type="text" id="proktorUser" class="form-control-login" placeholder="Username..." required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="proktorPass" class="form-control-login" placeholder="Password..." required>
+        </div>
+
+        <button type="submit" class="btn-login-submit">Masuk Dashboard ➡️</button>
+        <div id="loginErrMsg" class="login-err-msg">⚠️ Username atau Password salah!</div>
+      </form>
+    </div>
+  </div>
+
   <!-- NAVBAR -->
   <header class="proktor-nav">
     <div class="brand-title">
       <h1>CBT CONTROL & REPORT PANEL</h1>
       <span class="badge-proktor">PROKTOR / GURU</span>
     </div>
-    <button class="btn-action btn-refresh" onclick="loadProktorData()">🔄 Refresh Data</button>
+    <div class="nav-actions">
+      <span class="user-tag">Petugas: <strong id="loggedProktorName">Proktor</strong></span>
+      <button class="btn-action btn-refresh" onclick="loadProktorData()">🔄 Refresh</button>
+      <button class="btn-action btn-logout" onclick="handleProktorLogout()">Keluar 🚪</button>
+    </div>
   </header>
 
   <main class="main-container">
@@ -224,7 +314,7 @@
     <!-- 2. TABEL MONITORING DAN REKAP LAPORAN NILAI -->
     <div class="card">
       
-      <!-- KOP CETAK RESMI (MUNCUL SAAT CETAK/PDF) -->
+      <!-- KOP CETAK RESMI (HANYA SAAT CETAK / PDF) -->
       <div class="print-header">
         <h2>LAPORAN HASIL ASESMEN & UJIAN BERBASIS KOMPUTER (CBT)</h2>
         <p>REKAPITULASI NILAI DAN STATUS PENYELESAIAN PESERTA DIDIK</p>
@@ -245,7 +335,7 @@
         </div>
       </div>
 
-      <!-- FILTER KELAS, PAKET UJIAN, DAN PENCARIAN -->
+      <!-- FILTER BAR -->
       <div class="filter-bar">
         <select id="filterKelas" class="filter-select" onchange="filterStudents()">
           <option value="">-- Semua Kelas --</option>
@@ -291,10 +381,58 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
+    
+    // 🔑 KREDENSIAL PROKTOR (Default: proktor / proktor123 ATAU admin / admin123)
+    const VALID_PROCTOR_ACCOUNTS = {
+      "proktor": "proktor123",
+      "admin": "admin123"
+    };
+
     let allStudentsData = [];
     let allExamsData = [];
 
+    // ================= AUTENTIKASI PROKTOR =================
+    function checkProktorAuth() {
+      const auth = sessionStorage.getItem("proktorAuth");
+      const overlay = document.getElementById("loginOverlay");
+      const nameTag = document.getElementById("loggedProktorName");
+
+      if (auth) {
+        overlay.style.display = "none";
+        nameTag.innerText = auth.toUpperCase();
+        loadProktorData();
+      } else {
+        overlay.style.display = "flex";
+      }
+    }
+
+    function handleProktorLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById("proktorUser").value.trim().toLowerCase();
+      const p = document.getElementById("proktorPass").value.trim();
+      const errMsg = document.getElementById("loginErrMsg");
+
+      if (VALID_PROCTOR_ACCOUNTS[u] && VALID_PROCTOR_ACCOUNTS[u] === p) {
+        sessionStorage.setItem("proktorAuth", u);
+        errMsg.style.display = "none";
+        document.getElementById("proktorLoginForm").reset();
+        checkProktorAuth();
+      } else {
+        errMsg.style.display = "block";
+      }
+    }
+
+    function handleProktorLogout() {
+      if (confirm("Apakah Anda yakin ingin keluar dari Panel Proktor?")) {
+        sessionStorage.removeItem("proktorAuth");
+        checkProktorAuth();
+      }
+    }
+
+    // ================= DATA FETCHER =================
     async function loadProktorData() {
+      if (!sessionStorage.getItem("proktorAuth")) return;
+
       try {
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
@@ -313,7 +451,7 @@
           filterStudents();
         }
       } catch (err) {
-        console.error("Gagal load proktor data:", err);
+        console.error("Gagal load data proktor:", err);
       }
     }
 
@@ -346,7 +484,6 @@
       const selectKelas = document.getElementById("filterKelas");
       const selectPaket = document.getElementById("filterPaket");
 
-      // Isi Dropdown Kelas Unik
       const currentKelasVal = selectKelas.value;
       const kelasSet = new Set();
       students.forEach(s => { if (s.kelas && s.kelas !== "-") kelasSet.add(s.kelas); });
@@ -357,7 +494,6 @@
       });
       selectKelas.innerHTML = kelasHtml;
 
-      // Isi Dropdown Paket Ujian
       const currentPaketVal = selectPaket.value;
       let paketHtml = `<option value="">-- Semua Paket Ujian --</option>`;
       exams.forEach(ex => {
@@ -456,7 +592,6 @@
       }
     }
 
-    // 🖨️ FUNGSI CETAK / SIMPAN KE PDF
     function printReport() {
       const filterKelas = document.getElementById("filterKelas");
       const filterPaket = document.getElementById("filterPaket");
@@ -471,13 +606,16 @@
       document.getElementById("printPaketTxt").innerText = paketText;
       document.getElementById("printDateTxt").innerText = dateStr;
 
-      // Cetak halaman (browser otomatis menyediakan opsi Simpan sebagai PDF)
       window.print();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      loadProktorData();
-      setInterval(loadProktorData, 30000); // Auto-refresh setiap 30 detik
+      checkProktorAuth();
+      setInterval(() => {
+        if (sessionStorage.getItem("proktorAuth")) {
+          loadProktorData();
+        }
+      }, 30000);
     });
   </script>
 </body>
