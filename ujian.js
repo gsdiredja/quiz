@@ -9,6 +9,7 @@ let totalSeconds = EXAM_DURATION_MINUTES * 60;
 let timerInterval = null;
 let currentUsername = "";
 let currentUserData = {};
+let cleanPaketId = "soal-uh1";
 
 function getCleanPaketId(rawPath) {
   if (!rawPath) return "soal-uh1";
@@ -41,10 +42,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    if (!rawSoalPath || rawSoalPath === "undefined") {
-      rawSoalPath = "soal-uh1";
-    }
-
     try {
       currentUserData = JSON.parse(userDataStr);
     } catch(e) {
@@ -52,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     
     currentUsername = currentUserData.username || "siswa";
-    const cleanPaketId = getCleanPaketId(rawSoalPath);
+    cleanPaketId = getCleanPaketId(rawSoalPath);
 
     const userInfoEl = document.getElementById("userInfo");
     if (userInfoEl) {
@@ -61,142 +58,130 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // Ambil posisi nomor soal terakhir agar tersimpan jika halaman di-refresh
-    const savedLastIndex = localStorage.getItem(`currentIndex_${currentUsername}_${cleanPaketId}`);
-    if (savedLastIndex !== null && !isNaN(parseInt(savedLastIndex))) {
-      currentQuestionIndex = parseInt(savedLastIndex, 10);
-    }
+    // 🌐 1. CEK SESI DI GOOGLE SPREADSHEET (CLOUD RESTORE JIKA PINDAH PERANGKAT)
+    let sessionRestored = false;
+    try {
+      const sessionRes = await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "getstudentsession", username: currentUsername, paket: cleanPaketId })
+      });
+      const sessionData = await sessionRes.json();
 
-    const savedRemainingTime = localStorage.getItem(`remainingTime_${currentUsername}_${cleanPaketId}`);
-    if (savedRemainingTime !== null && !isNaN(parseInt(savedRemainingTime))) {
-      totalSeconds = parseInt(savedRemainingTime, 10);
-    }
-
-    startTimer();
-
-    const cachedQuestionsKey = `questions_${currentUsername}_${cleanPaketId}`;
-    const savedAnswersKey = `answers_${currentUsername}_${cleanPaketId}`;
-
-    const savedUserAnswers = localStorage.getItem(savedAnswersKey);
-    if (savedUserAnswers) {
-      try { userAnswers = JSON.parse(savedUserAnswers); } catch(e) { userAnswers = {}; }
-    }
-
-    const cachedQuestions = localStorage.getItem(cachedQuestionsKey);
-
-    if (cachedQuestions) {
-      questionsData = JSON.parse(cachedQuestions);
-      if (currentQuestionIndex >= questionsData.length) {
-        currentQuestionIndex = questionsData.length - 1;
+      if (sessionData.status === "found" && sessionData.shuffledQuestions && sessionData.shuffledQuestions.length > 0) {
+        questionsData = sessionData.shuffledQuestions;
+        userAnswers = sessionData.userAnswers || {};
+        currentQuestionIndex = sessionData.currentIndex || 0;
+        if (sessionData.remainingSeconds !== null && !isNaN(parseInt(sessionData.remainingSeconds))) {
+          totalSeconds = parseInt(sessionData.remainingSeconds, 10);
+        }
+        sessionRestored = true;
       }
+    } catch (err) {
+      console.warn("Gagal mengecek sesi cloud, beralih ke cache lokal...", err);
+    }
+
+    // Jika data sesi cloud berhasil dimuat
+    if (sessionRestored) {
+      startTimer();
       renderNumberGrid();
       showQuestion(currentQuestionIndex);
-    } else {
-      let loaded = false;
-      let rawLoadedQuestions = null;
+      return;
+    }
 
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "getquestions", paket: cleanPaketId })
-        });
-        const result = await response.json();
-        if (result.status === "success" && result.data) {
-          rawLoadedQuestions = result.data;
-          loaded = true;
-        }
-      } catch(err) {
-        console.warn("Gagal load dari GAS, mencoba lokal file...", err);
+    // 🌐 2. JIKA SESI BARU (PERTAMA KALI UJIAN): LOAD DARI BANK SOAL & ACAK
+    let rawLoadedQuestions = null;
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "getquestions", paket: cleanPaketId })
+      });
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        rawLoadedQuestions = result.data;
+      }
+    } catch(err) {
+      console.error("Gagal load soal dari server:", err);
+    }
+
+    if (rawLoadedQuestions) {
+      let finalArray = [];
+      let maxQty = 0;
+
+      if (!Array.isArray(rawLoadedQuestions) && rawLoadedQuestions.questions) {
+        maxQty = rawLoadedQuestions.maxQuestions || 0;
+        finalArray = rawLoadedQuestions.questions;
+      } else if (Array.isArray(rawLoadedQuestions)) {
+        finalArray = rawLoadedQuestions;
       }
 
-      if (!loaded) {
-        let targetLocalPath = rawSoalPath;
-        if (!targetLocalPath.startsWith('./') && !targetLocalPath.startsWith('data/')) {
-          targetLocalPath = `./data/${cleanPaketId}.json`;
-        }
-
-        try {
-          const localRes = await fetch(targetLocalPath);
-          if (localRes.ok) {
-            const localData = await localRes.json();
-            if (localData) {
-              rawLoadedQuestions = localData;
-              loaded = true;
-            }
-          }
-        } catch(err) {
-          console.error("Gagal load lokal JSON...", err);
-        }
-      }
-
-      if (loaded && rawLoadedQuestions) {
-        let finalArray = [];
-        let maxQty = 0;
-
-        if (!Array.isArray(rawLoadedQuestions) && rawLoadedQuestions.questions) {
-          maxQty = rawLoadedQuestions.maxQuestions || 0;
-          finalArray = rawLoadedQuestions.questions;
-        } else if (Array.isArray(rawLoadedQuestions)) {
-          finalArray = rawLoadedQuestions;
-        }
-
-        // Acak urutan soal
-        let shuffledAll = shuffleArray(finalArray);
-
-        if (maxQty > 0 && maxQty < shuffledAll.length) {
-          questionsData = shuffledAll.slice(0, maxQty);
-        } else {
-          questionsData = shuffledAll;
-        }
-
-        // Acak opsi jawaban
-        questionsData.forEach((q) => {
-          if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
-            q.options = shuffleArray(q.options);
-          }
-          if (q.matchOptions && Array.isArray(q.matchOptions)) {
-            q.matchOptions = shuffleArray(q.matchOptions);
-          }
-        });
-
-        localStorage.setItem(cachedQuestionsKey, JSON.stringify(questionsData));
-        renderNumberGrid();
-        showQuestion(currentQuestionIndex);
+      let shuffledAll = shuffleArray(finalArray);
+      if (maxQty > 0 && maxQty < shuffledAll.length) {
+        questionsData = shuffledAll.slice(0, maxQty);
       } else {
-        if (container) {
-          container.innerHTML = `
-            <div style="color: #dc2626; padding: 30px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
-              <h3 style="margin-bottom: 8px;">⚠️ Soal Ujian Tidak Ditemukan!</h3>
-              <p style="font-size: 0.9rem; color: #991b1b;">
-                Paket soal <code>"${cleanPaketId}"</code> belum tersedia di Spreadsheet atau file lokal.<br>
-                Silakan kembali ke menu Login dan pilih paket soal yang valid.
-              </p>
-            </div>
-          `;
+        questionsData = shuffledAll;
+      }
+
+      questionsData.forEach((q) => {
+        if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
+          q.options = shuffleArray(q.options);
         }
+        if (q.matchOptions && Array.isArray(q.matchOptions)) {
+          q.matchOptions = shuffleArray(q.matchOptions);
+        }
+      });
+
+      startTimer();
+      renderNumberGrid();
+      showQuestion(0);
+      syncSessionToCloud(); // Simpan susunan soal awal ke Cloud
+    } else {
+      if (container) {
+        container.innerHTML = `
+          <div style="color: #dc2626; padding: 30px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;">
+            <h3>⚠️ Soal Ujian Tidak Ditemukan!</h3>
+            <p style="font-size: 0.9rem; color: #991b1b; margin-top: 6px;">Paket soal belum tersedia di Spreadsheet.</p>
+          </div>
+        `;
       }
     }
 
   } catch (fatalError) {
     if (container) {
-      container.innerHTML = `
-        <div style="color: #dc2626; padding: 20px; text-align: center;">
-          <p><strong>Terjadi Kesalahan Sistem:</strong> ${fatalError.message}</p>
-        </div>
-      `;
+      container.innerHTML = `<p style="color:red; text-align:center;">Error: ${fatalError.message}</p>`;
     }
   }
 });
 
+// 🔄 SINKRONISASI RINGAN (Hanya dipanggil saat pindah nomor)
+function syncSessionToCloud() {
+  if (!currentUsername || !cleanPaketId || questionsData.length === 0) return;
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "savestudentsession",
+      username: currentUsername,
+      paket: cleanPaketId,
+      remainingSeconds: totalSeconds,
+      currentIndex: currentQuestionIndex,
+      shuffledQuestions: questionsData,
+      userAnswers: userAnswers
+    })
+  }).catch(() => {});
+}
+
+// ⏱️ TIMER RINGAN (Tanpa kirim request periodik tiap detik/10 detik)
 function startTimer() {
   updateTimerDisplay();
-  const cleanPaketId = getCleanPaketId(localStorage.getItem("soalPath"));
   
   timerInterval = setInterval(() => {
     totalSeconds--;
-    if (currentUsername) localStorage.setItem(`remainingTime_${currentUsername}_${cleanPaketId}`, totalSeconds);
     updateTimerDisplay();
 
     if (totalSeconds <= 0) {
@@ -231,7 +216,6 @@ function changeFontSize(size) {
   else if (size === 'large') panel.style.fontSize = '1.15rem';
 }
 
-/* 🔒 RENDER NUMBER GRID: HANYA INDIKATOR VISUAL (TIDAK BISA DIKLIK) */
 function renderNumberGrid() {
   const gridContainer = document.getElementById("numberGrid");
   if (!gridContainer || !questionsData) return;
@@ -272,70 +256,49 @@ function showQuestion(index) {
   const badgeEl = document.getElementById("questionTypeBadge");
   if (badgeEl) badgeEl.innerText = typeText;
 
-  const questionTextHtml = q.question || q.text || "";
-
   let html = `<div style="line-height: 1.6; color: #1e293b;">`;
-  html += `<p style="margin-bottom: 12px; font-weight: 600; font-size: 1.05rem;">${questionTextHtml}</p>`;
+  html += `<p style="margin-bottom: 12px; font-weight: 600; font-size: 1.05rem;">${q.question || q.text || ""}</p>`;
 
-  const mainImg = q.image || q.img || "";
-  if (mainImg && mainImg.trim() !== "") {
+  if (q.image && q.image.trim() !== "") {
     html += `
       <div style="text-align: center; margin-bottom: 16px;">
-        <img src="${mainImg}" alt="Gambar Soal" style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <img src="${q.image}" alt="Gambar Soal" style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #cbd5e1;">
       </div>
     `;
   }
 
-  // 1. TIPE: PILIHAN GANDA & BENAR/SALAH
+  // 1. Radio / Boolean (Benar / Salah & Pilihan Ganda)
   if ((q.type === "radio" || q.type === "boolean") && Array.isArray(q.options)) {
     q.options.forEach((opt, idx) => {
       const optVal = opt.v !== undefined ? opt.v : String.fromCharCode(65 + idx);
-      const optText = opt.t || opt.text || "";
-      const optImg = opt.image || opt.img || "";
       const isChecked = userAnswers[qKey] === optVal;
-      const labelBadge = String.fromCharCode(65 + idx);
-
-      let imgHtml = "";
-      if (optImg && optImg.trim() !== "") {
-        imgHtml = `<div style="margin-top: 8px;"><img src="${optImg}" alt="Gambar Opsi" style="max-width: 200px; max-height: 150px; border-radius: 6px; border: 1px solid #e2e8f0;"></div>`;
-      }
-
       html += `
         <div class="option-item ${isChecked ? 'selected' : ''}" onclick="selectRadioOption('${qKey}', '${optVal}', this)">
           <input type="radio" name="${qKey}" value="${optVal}" ${isChecked ? 'checked' : ''} style="display: none;" />
-          <div class="option-badge">${labelBadge}</div>
-          <div class="option-text">${optText}${imgHtml}</div>
+          <div class="option-badge">${String.fromCharCode(65 + idx)}</div>
+          <div class="option-text">${opt.t || opt.text || ""}</div>
         </div>
       `;
     });
   } 
-  // 2. TIPE: PILIHAN GANDA KOMPLEKS (2 JAWABAN)
+  // 2. Checkbox Kompleks (Maksimal 2 Pilihan)
   else if ((q.type === "checkbox" || q.type === "checkbox_limit_2") && Array.isArray(q.options)) {
     const savedArr = Array.isArray(userAnswers[qKey]) ? userAnswers[qKey] : [];
-    html += `<p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;"><em>*Pilihlah tepat 2 jawaban yang paling tepat.</em></p>`;
+    html += `<p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;"><em>*Pilihlah tepat 2 jawaban.</em></p>`;
 
     q.options.forEach((opt, idx) => {
       const optVal = opt.v !== undefined ? opt.v : String.fromCharCode(65 + idx);
-      const optText = opt.t || opt.text || "";
-      const optImg = opt.image || opt.img || "";
       const isChecked = savedArr.includes(optVal);
-      const labelBadge = idx + 1;
-
-      let imgHtml = "";
-      if (optImg && optImg.trim() !== "") {
-        imgHtml = `<div style="margin-top: 8px;"><img src="${optImg}" alt="Gambar Opsi" style="max-width: 200px; max-height: 150px; border-radius: 6px; border: 1px solid #e2e8f0;"></div>`;
-      }
-
       html += `
         <div class="option-item ${isChecked ? 'selected' : ''}" onclick="toggleCheckboxOption('${qKey}', '${optVal}', this)">
           <input type="checkbox" name="${qKey}" value="${optVal}" ${isChecked ? 'checked' : ''} style="display: none;" />
-          <div class="option-badge">${labelBadge}</div>
-          <div class="option-text">${optText}${imgHtml}</div>
+          <div class="option-badge">${idx + 1}</div>
+          <div class="option-text">${opt.t || opt.text || ""}</div>
         </div>
       `;
     });
   } 
-  // 3. TIPE: MENJODOHKAN (MATCHING)
+  // 3. Menjodohkan (Matching)
   else if (q.type === "matching" && Array.isArray(q.pairs)) {
     const savedPairs = (typeof userAnswers[qKey] === "object" && userAnswers[qKey] !== null) ? userAnswers[qKey] : {};
     html += `<div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">`;
@@ -355,11 +318,11 @@ function showQuestion(index) {
     });
     html += `</div>`;
   }
-  // 4. TIPE: ESSAY / URAIAN
+  // 4. Uraian / Essay
   else if (q.type === "essay") {
     const savedText = typeof userAnswers[qKey] === "string" ? userAnswers[qKey] : "";
     html += `
-      <textarea id="essayInput" name="${qKey}" rows="6" class="essay-box" placeholder="Ketikkan jawaban uraian Anda..." oninput="saveEssayText('${qKey}', this.value)">${savedText}</textarea>
+      <textarea id="essayInput" rows="6" class="essay-box" placeholder="Ketikkan jawaban uraian..." oninput="saveEssayText('${qKey}', this.value)">${savedText}</textarea>
     `;
   }
 
@@ -396,66 +359,50 @@ function selectRadioOption(qName, val, el) {
   if (input) input.checked = true;
 
   userAnswers[qName] = val;
-  saveCurrentAnswer();
+  saveCurrentAnswerLocal();
   hideWarning();
 }
 
 function toggleCheckboxOption(qName, val, el) {
-  if (!Array.isArray(userAnswers[qName])) {
-    userAnswers[qName] = [];
-  }
-
+  if (!Array.isArray(userAnswers[qName])) userAnswers[qName] = [];
   const idx = userAnswers[qName].indexOf(val);
+
   if (idx > -1) {
     userAnswers[qName].splice(idx, 1);
     el.classList.remove('selected');
-    const input = el.querySelector('input');
-    if (input) input.checked = false;
   } else {
     if (userAnswers[qName].length >= 2) {
-      alert("Anda hanya dapat memilih maksimal 2 jawaban!");
+      alert("Hanya dapat memilih maksimal 2 jawaban!");
       return;
     }
     userAnswers[qName].push(val);
     el.classList.add('selected');
-    const input = el.querySelector('input');
-    if (input) input.checked = true;
   }
 
-  saveCurrentAnswer();
+  saveCurrentAnswerLocal();
   hideWarning();
 }
 
 function saveMatchingOption(qName, pairId, val) {
-  if (typeof userAnswers[qName] !== "object" || userAnswers[qName] === null) {
-    userAnswers[qName] = {};
-  }
+  if (typeof userAnswers[qName] !== "object" || userAnswers[qName] === null) userAnswers[qName] = {};
+  if (val) userAnswers[qName][pairId] = val;
+  else delete userAnswers[qName][pairId];
 
-  if (val) {
-    userAnswers[qName][pairId] = val;
-  } else {
-    delete userAnswers[qName][pairId];
-  }
-
-  saveCurrentAnswer();
+  saveCurrentAnswerLocal();
   hideWarning();
 }
 
 function saveEssayText(qName, text) {
-  if (text.trim() !== "") {
-    userAnswers[qName] = text.trim();
-  } else {
-    delete userAnswers[qName];
-  }
-  saveCurrentAnswer();
+  if (text.trim() !== "") userAnswers[qName] = text.trim();
+  else delete userAnswers[qName];
+
+  saveCurrentAnswerLocal();
   hideWarning();
 }
 
-function saveCurrentAnswer() {
-  let rawSoalPath = localStorage.getItem("soalPath") || "soal-uh1";
-  const cleanPaketId = getCleanPaketId(rawSoalPath);
-  const savedAnswersKey = `answers_${currentUsername}_${cleanPaketId}`;
-  localStorage.setItem(savedAnswersKey, JSON.stringify(userAnswers));
+// Penyimpanan instan ke cache lokal tanpa beban server
+function saveCurrentAnswerLocal() {
+  localStorage.setItem(`answers_${currentUsername}_${cleanPaketId}`, JSON.stringify(userAnswers));
   renderNumberGrid();
 }
 
@@ -473,24 +420,20 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
-/* 🔒 FUNGSI PINDAH SOAL: LANGSUNG MAJU TANPA POP-UP CONFIRM */
+// 🔒 PINDAH SOAL: LANGSUNG MAJU & SIMPAN KE SERVER SPREADSHEET
 function nextQuestion() {
-  saveCurrentAnswer();
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
-  // Wajib dijawab terlebih dahulu
   if (!isQuestionAnswered(qKey)) {
     showWarning("Jawab pertanyaan ini terlebih dahulu sebelum melanjutkan!");
     return;
   }
 
-  // Langsung eksekusi ke nomor selanjutnya
   if (currentQuestionIndex < questionsData.length - 1) {
     currentQuestionIndex++;
     
-    const cleanPaketId = getCleanPaketId(localStorage.getItem("soalPath"));
-    localStorage.setItem(`currentIndex_${currentUsername}_${cleanPaketId}`, currentQuestionIndex);
-
+    // Kirim sinkronisasi progres ke Cloud saat nomor soal berpindah
+    syncSessionToCloud();
     showQuestion(currentQuestionIndex);
     
     const sidebar = document.getElementById("gridSidebar");
@@ -516,7 +459,6 @@ function showWarning(msg) {
 }
 
 function submitExam() {
-  saveCurrentAnswer();
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   if (!isQuestionAnswered(qKey)) {
     showWarning("Jawab soal terakhir terlebih dahulu!");
@@ -529,7 +471,6 @@ function submitExam() {
 }
 
 function forceSubmitExam() {
-  saveCurrentAnswer();
   processExamResults();
 }
 
@@ -546,8 +487,6 @@ async function processExamResults() {
     `;
   }
 
-  let rawSoalPath = localStorage.getItem("soalPath") || "soal-uh1";
-
   try {
     await fetch(SCRIPT_URL, {
       method: "POST",
@@ -558,7 +497,7 @@ async function processExamResults() {
         username: currentUserData.username || currentUsername,
         nama: currentUserData.nama || "-",
         kelas: currentUserData.kelas || "-",
-        paket: rawSoalPath,
+        paket: cleanPaketId,
         jawaban: userAnswers
       }),
     });
@@ -566,7 +505,6 @@ async function processExamResults() {
     console.error("Gagal Mengirim Data:", err);
   }
 
-  clearExamCache();
   showFinalResult();
 }
 
@@ -601,21 +539,9 @@ function confirmLogout() {
   }
 }
 
-/* 🔒 LOGOUT: TIDAK MENGIRIM RESET KE SERVER AGAR STATUS TETAP TERKUNCI */
+// 🔒 LOGOUT: Sesi lokal dibersihkan tapi status di server tetap terkunci (Online)
 function logout() {
   clearInterval(timerInterval);
   localStorage.removeItem("userData");
   window.location.href = "index.html";
-}
-
-function clearExamCache() {
-  let rawSoalPath = localStorage.getItem("soalPath") || "soal-uh1";
-  const cleanPaketId = getCleanPaketId(rawSoalPath);
-
-  if (currentUsername) {
-    localStorage.removeItem(`currentIndex_${currentUsername}_${cleanPaketId}`);
-    localStorage.removeItem(`remainingTime_${currentUsername}_${cleanPaketId}`);
-    localStorage.removeItem(`questions_${currentUsername}_${cleanPaketId}`);
-    localStorage.removeItem(`answers_${currentUsername}_${cleanPaketId}`);
-  }
 }
