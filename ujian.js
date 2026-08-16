@@ -476,26 +476,27 @@ function nextQuestion() {
   saveCurrentAnswer();
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
   
+  // Tetap memastikan soal sudah dijawab sebelum maju
   if (!isQuestionAnswered(qKey)) {
     showWarning("Jawab pertanyaan ini terlebih dahulu sebelum melanjutkan!");
     return;
   }
 
-  if (confirm("Lanjut ke nomor berikutnya? Soal yang telah dilewati TIDAK DAPAT diakses kembali!")) {
-    if (currentQuestionIndex < questionsData.length - 1) {
-      currentQuestionIndex++;
-      
-      const cleanPaketId = getCleanPaketId(localStorage.getItem("soalPath"));
-      localStorage.setItem(`currentIndex_${currentUsername}_${cleanPaketId}`, currentQuestionIndex);
+  // Langsung pindah ke nomor berikutnya tanpa pop-up konfirmasi
+  if (currentQuestionIndex < questionsData.length - 1) {
+    currentQuestionIndex++;
+    
+    const cleanPaketId = getCleanPaketId(localStorage.getItem("soalPath"));
+    localStorage.setItem(`currentIndex_${currentUsername}_${cleanPaketId}`, currentQuestionIndex);
 
-      showQuestion(currentQuestionIndex);
-      
-      const sidebar = document.getElementById("gridSidebar");
-      if (sidebar && sidebar.classList.contains("open")) {
-        sidebar.classList.remove("open");
-      }
+    showQuestion(currentQuestionIndex);
+    
+    const sidebar = document.getElementById("gridSidebar");
+    if (sidebar && sidebar.classList.contains("open")) {
+      sidebar.classList.remove("open");
     }
   }
+}
 }
 
 function showWarning(msg) {
