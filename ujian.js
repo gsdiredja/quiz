@@ -2,7 +2,7 @@ let currentQuestionIndex = 0;
 let questionsData = [];
 let userAnswers = {};
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQS4gz7Kwl1hw95QlyFsQFug-NQlNLG6C-dxV_EV9JAaQ1Z8zq_AeuPvaM-7p3NA82/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXMJAupaHR29GuFx5-7IECHTJ3p7Och8OgI_vBpkXXYypkRGqf6y0bS1VUTZxuCjY/exec";
 
 let EXAM_DURATION_MINUTES = 60;
 let totalSeconds = EXAM_DURATION_MINUTES * 60;
@@ -259,12 +259,49 @@ function showQuestion(index) {
   let html = `<div style="line-height: 1.6; color: #1e293b;">`;
   html += `<p style="margin-bottom: 12px; font-weight: 600; font-size: 1.05rem;">${q.question || q.text || ""}</p>`;
 
+  // 🖼️ RENDERING GAMBAR (RESOLVER GOOGLE DRIVE DB_IMAGES)
   if (q.image && q.image.trim() !== "") {
+    var rawImg = q.image.trim();
+    var imgId = "img_q_" + index;
+
     html += `
       <div style="text-align: center; margin-bottom: 16px;">
-        <img src="${q.image}" alt="Gambar Soal" style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #cbd5e1;">
+        <img id="${imgId}" src="" alt="Memuat Gambar..." style="max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid #cbd5e1; display: none;">
+        <div id="${imgId}_loading" style="font-size: 0.85rem; color: #64748b; padding: 10px;">⏳ Memuat gambar...</div>
       </div>
     `;
+
+    if (rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
+      setTimeout(() => {
+        var el = document.getElementById(imgId);
+        var loadEl = document.getElementById(imgId + "_loading");
+        if (el) { el.src = rawImg; el.style.display = "inline-block"; }
+        if (loadEl) loadEl.style.display = "none";
+      }, 50);
+    } else {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "getimageurl", filename: rawImg })
+      })
+      .then(res => res.json())
+      .then(res => {
+        var el = document.getElementById(imgId);
+        var loadEl = document.getElementById(imgId + "_loading");
+        if (res.status === "success" && el) {
+          el.src = res.url;
+          el.style.display = "inline-block";
+          if (loadEl) loadEl.style.display = "none";
+        } else {
+          if (loadEl) loadEl.innerHTML = `<span style="color:#ef4444;">⚠️ Gambar '${rawImg}' belum diunggah di folder db_images Google Drive</span>`;
+        }
+      })
+      .catch(() => {
+        var loadEl = document.getElementById(imgId + "_loading");
+        if (loadEl) loadEl.innerHTML = `<span style="color:#ef4444;">⚠️ Gagal memuat gambar</span>`;
+      });
+    }
   }
 
   // 1. Radio / Boolean
