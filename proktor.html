@@ -3,22 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Monitoring & Kontrol Proktor</title>
+  <title>Dashboard Monitoring & Laporan Nilai Proktor</title>
   <style>
     :root {
       --primary: #0f172a;
       --accent: #2563eb;
       --bg: #f8fafc;
       --card: #ffffff;
-      --border: #e2e8f0;
+      --border: #cbd5e1;
       --text: #1e293b;
       --text-muted: #64748b;
       --green: #16a34a;
       --red: #dc2626;
-      --yellow: #d97706;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     /* NAVBAR */
@@ -35,16 +34,16 @@
     .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
     .badge-proktor { background-color: var(--accent); font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
 
-    .main-container { max-width: 1200px; width: 100%; margin: 24px auto; padding: 0 16px; flex: 1; }
+    .main-container { max-width: 1250px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
 
-    /* CARDS & GRIDS */
+    /* CARD */
     .card {
       background: var(--card);
       border-radius: 10px;
       border: 1px solid var(--border);
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .card-title {
       font-size: 1.05rem;
@@ -55,15 +54,15 @@
       align-items: center;
     }
 
-    /* CONTROL STATUS UJIAN */
+    /* KONTROL PAKET UJIAN */
     .exam-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 12px;
     }
     .exam-box {
       border: 1px solid var(--border);
-      padding: 14px;
+      padding: 12px 16px;
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
@@ -74,112 +73,188 @@
     .exam-info p { font-size: 0.75rem; color: var(--text-muted); }
 
     .btn-toggle-status {
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: 6px;
       border: none;
       font-weight: 700;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
     .status-open { background: #dcfce7; color: var(--green); border: 1px solid #86efac; }
     .status-close { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
 
-    /* FILTER & SEARCH */
+    /* FILTER & SEARCH BAR */
     .filter-bar {
       display: flex;
       gap: 12px;
       margin-bottom: 16px;
       flex-wrap: wrap;
+      align-items: center;
     }
-    .search-input {
-      flex: 1;
-      min-width: 240px;
-      padding: 10px 14px;
+    .filter-select, .search-input {
+      padding: 8px 12px;
       border: 1.5px solid var(--border);
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
     }
-    .search-input:focus { border-color: var(--accent); }
+    .filter-select { background: white; cursor: pointer; min-width: 160px; }
+    .search-input { flex: 1; min-width: 220px; }
 
-    /* TABEL MONITORING SISWA */
+    /* BUTTONS */
+    .btn-action {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.825rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .btn-print { background-color: #0f172a; color: white; }
+    .btn-print:hover { background-color: #334155; }
+    .btn-refresh { background-color: var(--accent); color: white; }
+
+    /* TABEL MONITORING & LAPORAN */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
     th { background: #f1f5f9; text-align: left; padding: 12px 10px; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
-    td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px; border-bottom: 1px solid var(--border); }
     tr:hover { background-color: #f8fafc; }
 
-    /* STATUS BADGE SISWA */
     .badge-status {
       display: inline-block;
-      padding: 4px 8px;
+      padding: 3px 8px;
       border-radius: 4px;
       font-size: 0.75rem;
       font-weight: 700;
     }
     .badge-online { background-color: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
     .badge-offline { background-color: #f1f5f9; color: #64748b; }
+    .badge-nilai {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      background: #eff6ff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #bfdbfe;
+    }
 
     .btn-reset {
       background-color: #ef4444;
       color: white;
       border: none;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 4px;
       font-weight: 700;
       font-size: 0.75rem;
       cursor: pointer;
     }
     .btn-reset:hover { background-color: #dc2626; }
-    .btn-refresh {
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+
+    /* KOP LAPORAN CETAK (HANYA MUNCUL DI PRINT / PDF) */
+    .print-header { display: none; }
+
+    /* 🖨️ ATURAN KHUSUS CETAK & PDF (@media print) */
+    @media print {
+      body { background: white; color: black; font-size: 10pt; }
+      .proktor-nav, .card:first-child, .filter-bar, .btn-action, .btn-reset, .footer, .badge-proktor {
+        display: none !important;
+      }
+      .main-container { max-width: 100%; margin: 0; padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+      .card-title { display: none; }
+
+      .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid black;
+        padding-bottom: 10px;
+      }
+      .print-header h2 { font-size: 14pt; font-weight: bold; text-transform: uppercase; }
+      .print-header p { font-size: 10pt; margin-top: 4px; }
+      .print-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 9.5pt;
+        font-weight: bold;
+      }
+
+      table { width: 100%; border: 1px solid #000; font-size: 9.5pt; }
+      th, td { border: 1px solid #000 !important; padding: 6px 8px; }
+      th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
+      .badge-nilai { background: none; border: none; color: black; font-weight: bold; padding: 0; }
+      .badge-status { border: none; background: none; color: black; font-weight: normal; }
+      .th-aksi, .td-aksi { display: none !important; } /* Sembunyikan kolom tombol aksi */
     }
 
-    .footer { text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
+    .footer { text-align: center; padding: 14px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
+  <!-- NAVBAR -->
   <header class="proktor-nav">
     <div class="brand-title">
-      <h1>CBT PROKTOR PANEL</h1>
-      <span class="badge-proktor">MONITORING RUANG UJIAN</span>
+      <h1>CBT CONTROL & REPORT PANEL</h1>
+      <span class="badge-proktor">PROKTOR / GURU</span>
     </div>
-    <button class="btn-refresh" onclick="loadProktorData()">🔄 Refresh Data</button>
+    <button class="btn-action btn-refresh" onclick="loadProktorData()">🔄 Refresh Data</button>
   </header>
 
   <main class="main-container">
 
-    <!-- 1. KONTROL PAKET UJIAN (BUKA/TUTUP AKSES INSTAN) -->
+    <!-- 1. KONTROL PAKET UJIAN -->
     <div class="card">
       <div class="card-title">
         <span>📡 Kontrol Akses Paket Ujian</span>
-        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Buka atau tutup ujian langsung ke siswa</span>
+        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Buka atau tutup ujian langsung</span>
       </div>
       <div class="exam-grid" id="examContainer">
         <p style="color: #64748b;">Memuat jadwal ujian...</p>
       </div>
     </div>
 
-    <!-- 2. TABEL MONITORING SISWA REALTIME -->
+    <!-- 2. TABEL MONITORING DAN REKAP LAPORAN NILAI -->
     <div class="card">
-      <div class="card-title">
-        <span>👥 Monitoring Progres Peserta Ujian</span>
-        <span id="studentCountBadge" style="font-size: 0.8rem; font-weight: 700; color: var(--accent);">0 Siswa</span>
+      
+      <!-- KOP CETAK RESMI (MUNCUL SAAT CETAK/PDF) -->
+      <div class="print-header">
+        <h2>LAPORAN HASIL ASESMEN & UJIAN BERBASIS KOMPUTER (CBT)</h2>
+        <p>REKAPITULASI NILAI DAN STATUS PENYELESAIAN PESERTA DIDIK</p>
       </div>
 
+      <div class="print-meta" id="printMetaInfo" style="display: none;">
+        <span>Kelas: <strong id="printKelasTxt">Semua Kelas</strong></span>
+        <span>Paket Ujian: <strong id="printPaketTxt">Semua Ujian</strong></span>
+        <span>Waktu Unduh: <strong id="printDateTxt">-</strong></span>
+      </div>
+
+      <div class="card-title">
+        <span>👥 Monitoring & Laporan Nilai Peserta</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action btn-print" onclick="printReport()">
+            🖨️ Cetak / Simpan PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTER KELAS, PAKET UJIAN, DAN PENCARIAN -->
       <div class="filter-bar">
+        <select id="filterKelas" class="filter-select" onchange="filterStudents()">
+          <option value="">-- Semua Kelas --</option>
+        </select>
+
+        <select id="filterPaket" class="filter-select" onchange="filterStudents()">
+          <option value="">-- Semua Paket Ujian --</option>
+        </select>
+
         <input type="text" id="searchStudent" class="search-input" placeholder="🔍 Cari NISN atau Nama Siswa..." oninput="filterStudents()">
       </div>
 
@@ -187,36 +262,38 @@
         <table>
           <thead>
             <tr>
+              <th style="width: 40px; text-align: center;">No</th>
               <th>NISN</th>
               <th>Nama Siswa</th>
               <th>Kelas</th>
-              <th>Status Login</th>
               <th>Paket Ujian</th>
-              <th>Soal Aktif</th>
+              <th>Status / Progres</th>
               <th>Sisa Waktu</th>
-              <th>Aksi Proktor</th>
+              <th style="text-align: center;">Nilai Akhir</th>
+              <th class="th-aksi" style="text-align: center;">Aksi Proktor</th>
             </tr>
           </thead>
           <tbody id="studentTableBody">
             <tr>
-              <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Memuat data monitoring...</td>
+              <td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">Memuat data monitoring...</td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
 
   </main>
 
   <footer class="footer">
-    © 2026 CBT AKM System • Portal Khusus Proktor & Pengawas
+    © 2026 CBT Control & Report Panel • Designed for Proctors & Teachers
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7y6F-755S42rE1vfNFccjugXs3DsXO9sdvBjE90Ld7LgzI1VSmoJzXz4uWivKglVY/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
     let allStudentsData = [];
+    let allExamsData = [];
 
-    // 📥 TARIK DATA DARI SPREADSHEET
     async function loadProktorData() {
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -230,19 +307,20 @@
 
         if (result.status === "success") {
           allStudentsData = result.students || [];
-          renderExams(result.exams || []);
-          renderStudents(allStudentsData);
+          allExamsData = result.exams || [];
+          renderExams(allExamsData);
+          populateFilterOptions(allStudentsData, allExamsData);
+          filterStudents();
         }
       } catch (err) {
         console.error("Gagal load proktor data:", err);
       }
     }
 
-    // RENDER STATUS PAKET UJIAN
     function renderExams(exams) {
       const container = document.getElementById("examContainer");
       if (exams.length === 0) {
-        container.innerHTML = `<p style="color: #64748b;">Tidak ada jadwal ujian.</p>`;
+        container.innerHTML = `<p style="color: #64748b;">Tidak ada paket ujian.</p>`;
         return;
       }
 
@@ -264,34 +342,79 @@
       container.innerHTML = html;
     }
 
-    // RENDER TABEL SISWA
+    function populateFilterOptions(students, exams) {
+      const selectKelas = document.getElementById("filterKelas");
+      const selectPaket = document.getElementById("filterPaket");
+
+      // Isi Dropdown Kelas Unik
+      const currentKelasVal = selectKelas.value;
+      const kelasSet = new Set();
+      students.forEach(s => { if (s.kelas && s.kelas !== "-") kelasSet.add(s.kelas); });
+
+      let kelasHtml = `<option value="">-- Semua Kelas --</option>`;
+      Array.from(kelasSet).sort().forEach(k => {
+        kelasHtml += `<option value="${k}" ${k === currentKelasVal ? 'selected' : ''}>Kelas ${k}</option>`;
+      });
+      selectKelas.innerHTML = kelasHtml;
+
+      // Isi Dropdown Paket Ujian
+      const currentPaketVal = selectPaket.value;
+      let paketHtml = `<option value="">-- Semua Paket Ujian --</option>`;
+      exams.forEach(ex => {
+        paketHtml += `<option value="${ex.kode}" ${ex.kode === currentPaketVal ? 'selected' : ''}>${ex.kode} - ${ex.nama}</option>`;
+      });
+      selectPaket.innerHTML = paketHtml;
+    }
+
+    function filterStudents() {
+      const q = document.getElementById("searchStudent").value.trim().toLowerCase();
+      const selectedKelas = document.getElementById("filterKelas").value;
+      const selectedPaket = document.getElementById("filterPaket").value.toLowerCase();
+
+      const filtered = allStudentsData.filter(s => {
+        const matchSearch = s.username.toLowerCase().includes(q) || s.nama.toLowerCase().includes(q);
+        const matchKelas  = selectedKelas === "" || s.kelas === selectedKelas;
+        const matchPaket  = selectedPaket === "" || s.paket.toLowerCase().includes(selectedPaket);
+        return matchSearch && matchKelas && matchPaket;
+      });
+
+      renderStudents(filtered);
+    }
+
     function renderStudents(students) {
       const tbody = document.getElementById("studentTableBody");
-      document.getElementById("studentCountBadge").innerText = `${students.length} Siswa Terdaftar`;
 
       if (students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">Data siswa tidak ditemukan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 20px;">Data siswa tidak ditemukan sesuai filter.</td></tr>`;
         return;
       }
 
       let html = "";
-      students.forEach(s => {
+      students.forEach((s, idx) => {
         const isOnline = s.status.startsWith("ONLINE_");
-        const statusBadge = isOnline 
-          ? `<span class="badge-status badge-online">🔒 TERKUNCI (${s.status})</span>`
-          : `<span class="badge-status badge-offline">OFFLINE</span>`;
+        const hasFinished = s.nilai !== "-";
+
+        let statusText = `<span class="badge-status badge-offline">OFFLINE</span>`;
+        if (isOnline) {
+          statusText = `<span class="badge-status badge-online">🔒 AKTIF (Soal ${s.noSoal})</span>`;
+        } else if (hasFinished) {
+          statusText = `<span style="color: #16a34a; font-weight: bold;">✔️ SELESAI</span>`;
+        }
+
+        const nilaiBadge = hasFinished ? `<span class="badge-nilai">${s.nilai}</span>` : `<span style="color:#94a3b8;">-</span>`;
 
         html += `
           <tr>
+            <td style="text-align: center;">${idx + 1}</td>
             <td><strong>${s.username}</strong></td>
             <td>${s.nama}</td>
             <td>${s.kelas}</td>
-            <td>${statusBadge}</td>
             <td>${s.paket}</td>
-            <td>${s.noSoal !== '-' ? `Soal <strong>${s.noSoal}</strong> (${s.terjawab} terjawab)` : '-'}</td>
+            <td>${statusText}</td>
             <td>${s.sisaWaktu}</td>
-            <td>
-              ${isOnline ? `<button class="btn-reset" onclick="resetStudent('${s.username}')">🔓 Reset Login</button>` : '<span style="color:#94a3b8; font-size:0.8rem;">Siap Login</span>'}
+            <td style="text-align: center;">${nilaiBadge}</td>
+            <td class="td-aksi" style="text-align: center;">
+              ${isOnline ? `<button class="btn-reset" onclick="resetStudent('${s.username}')">🔓 Reset Login</button>` : '<span style="color:#94a3b8; font-size:0.8rem;">-</span>'}
             </td>
           </tr>
         `;
@@ -299,20 +422,8 @@
       tbody.innerHTML = html;
     }
 
-    // PENCARIAN SISWA
-    function filterStudents() {
-      const q = document.getElementById("searchStudent").value.trim().toLowerCase();
-      const filtered = allStudentsData.filter(s => 
-        s.username.toLowerCase().includes(q) || 
-        s.nama.toLowerCase().includes(q) || 
-        s.kelas.toLowerCase().includes(q)
-      );
-      renderStudents(filtered);
-    }
-
-    // 🔓 1-KLIK RESET SISWA
     async function resetStudent(username) {
-      if (!confirm(`Reset izin login untuk siswa dengan NISN: ${username}?`)) return;
+      if (!confirm(`Reset izin login untuk siswa NISN: ${username}?`)) return;
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -329,7 +440,6 @@
       }
     }
 
-    // 🔄 TOGGLE OPEN/CLOSE UJIAN
     async function toggleExamStatus(kode, targetStatus) {
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -346,10 +456,28 @@
       }
     }
 
-    // Load data otomatis saat pertama kali dibuka & refresh berkala tiap 30 detik
+    // 🖨️ FUNGSI CETAK / SIMPAN KE PDF
+    function printReport() {
+      const filterKelas = document.getElementById("filterKelas");
+      const filterPaket = document.getElementById("filterPaket");
+
+      const kelasText = filterKelas.value ? `Kelas ${filterKelas.value}` : "Semua Kelas";
+      const paketText = filterPaket.value ? filterPaket.options[filterPaket.selectedIndex].text : "Semua Paket Ujian";
+      
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+      document.getElementById("printKelasTxt").innerText = kelasText;
+      document.getElementById("printPaketTxt").innerText = paketText;
+      document.getElementById("printDateTxt").innerText = dateStr;
+
+      // Cetak halaman (browser otomatis menyediakan opsi Simpan sebagai PDF)
+      window.print();
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       loadProktorData();
-      setInterval(loadProktorData, 30000);
+      setInterval(loadProktorData, 30000); // Auto-refresh setiap 30 detik
     });
   </script>
 </body>
