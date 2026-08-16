@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const alertBox = document.getElementById("alertBox");
   const jenisUjianSelect = document.getElementById("jenisUjian");
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwbgfoKcFk3KACQgW-CXjVpr-TIrfKrCAC4aXKHWYdvh1J43bT6zCFB6mdBstU7YZHb/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7y6F-755S42rE1vfNFccjugXs3DsXO9sdvBjE90Ld7LgzI1VSmoJzXz4uWivKglVY/exec";
 
-  // 🔄 FUNGSI OTOMATIS: Tarik Paket Ujian Aktif dari Sheet 'Jadwal_Ujian'
+  // 🔄 Tarik Paket Ujian Aktif
   async function loadActiveExams() {
     if (!jenisUjianSelect) return;
 
@@ -13,21 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "cors",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8",
-        },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "getactiveexams" })
       });
 
       const activeExams = await response.json();
-
-      jenisUjianSelect.innerHTML = ""; // Kosongkan placeholder loading
+      jenisUjianSelect.innerHTML = "";
 
       if (Array.isArray(activeExams) && activeExams.length > 0) {
-        activeExams.forEach(exam => {
+        activeExams.forEach((exam, idx) => {
           const option = document.createElement("option");
           option.value = exam.kode; 
           option.textContent = `${exam.kode} - ${exam.nama} (${exam.durasi} Menit)`;
+          if (idx === 0) option.selected = true;
           jenisUjianSelect.appendChild(option);
         });
       } else {
@@ -39,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Jalankan pengambilan daftar ujian saat halaman selesai dimuat
   loadActiveExams();
 
   // --- LOGIKA FORM LOGIN ---
@@ -49,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-      const jenisUjian = document.getElementById("jenisUjian").value; // Ambil nilai paket ujian
+      const jenisUjian = document.getElementById("jenisUjian").value;
       
       if (!jenisUjian) {
         showAlert("Pilih paket ujian yang valid terlebih dahulu!");
@@ -66,14 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch(SCRIPT_URL, {
           method: "POST",
           mode: "cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-          },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "login",
             username: username,
             password: password,
-            paket: jenisUjian // 👈 WAJIB: Mengirimkan kode paket ke GAS agar status menjadi ONLINE_KODEPAKET
+            paket: jenisUjian
           }),
         });
 
@@ -89,21 +84,25 @@ document.addEventListener("DOMContentLoaded", () => {
           submitBtn.disabled = false;
         }
       } catch (error) {
-        console.error("Login Error / Offline Mode:", error);
-        
-        const fallbackUserData = { username: username, nama: username, kelas: "-" };
-        localStorage.setItem("userData", JSON.stringify(fallbackUserData));
-        localStorage.setItem("soalPath", jenisUjian);
-
-        window.location.href = "ujian.html";
+        console.error("Login Error:", error);
+        showAlert("Hubungi Admin/Proktor");
+        submitBtn.innerText = originalBtnText;
+        submitBtn.disabled = false;
       }
     });
   }
 
+  // 🔴 TAMPILKAN PESAN DENGAN WARNA MERAH & BOLD
   function showAlert(message) {
     if (alertBox) {
-      alertBox.innerText = message;
+      alertBox.innerHTML = `<span style="color: #dc2626; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">⚠️ ${message}</span>`;
       alertBox.style.display = "block";
+      alertBox.style.backgroundColor = "#fee2e2";
+      alertBox.style.border = "1.5px solid #ef4444";
+      alertBox.style.padding = "12px 14px";
+      alertBox.style.borderRadius = "8px";
+      alertBox.style.marginTop = "12px";
+      alertBox.style.textAlign = "center";
     } else {
       alert(message);
     }
@@ -112,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function hideAlert() {
     if (alertBox) {
       alertBox.style.display = "none";
-      alertBox.innerText = "";
+      alertBox.innerHTML = "";
     }
   }
 });
