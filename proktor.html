@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Monitoring & Kontrol Proktor</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --green: #16a34a;
+      --red: #dc2626;
+      --yellow: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* NAVBAR */
+    .proktor-nav {
+      background-color: var(--primary);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .brand-title { display: flex; align-items: center; gap: 10px; }
+    .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
+    .badge-proktor { background-color: var(--accent); font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
+
+    .main-container { max-width: 1200px; width: 100%; margin: 24px auto; padding: 0 16px; flex: 1; }
+
+    /* CARDS & GRIDS */
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* CONTROL STATUS UJIAN */
+    .exam-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .exam-box {
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .exam-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .exam-info p { font-size: 0.75rem; color: var(--text-muted); }
+
+    .btn-toggle-status {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .status-open { background: #dcfce7; color: var(--green); border: 1px solid #86efac; }
+    .status-close { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
+
+    /* FILTER & SEARCH */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 240px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* TABEL MONITORING SISWA */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { background: #f1f5f9; text-align: left; padding: 12px 10px; font-weight: 700; color: #475569; border-bottom: 2px solid var(--border); }
+    td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
+    tr:hover { background-color: #f8fafc; }
+
+    /* STATUS BADGE SISWA */
+    .badge-status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-online { background-color: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
+    .badge-offline { background-color: #f1f5f9; color: #64748b; }
+
+    .btn-reset {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .btn-reset:hover { background-color: #dc2626; }
+    .btn-refresh {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer { text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <header class="proktor-nav">
+    <div class="brand-title">
+      <h1>CBT PROKTOR PANEL</h1>
+      <span class="badge-proktor">MONITORING RUANG UJIAN</span>
+    </div>
+    <button class="btn-refresh" onclick="loadProktorData()">🔄 Refresh Data</button>
+  </header>
+
+  <main class="main-container">
+
+    <!-- 1. KONTROL PAKET UJIAN (BUKA/TUTUP AKSES INSTAN) -->
+    <div class="card">
+      <div class="card-title">
+        <span>📡 Kontrol Akses Paket Ujian</span>
+        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Buka atau tutup ujian langsung ke siswa</span>
+      </div>
+      <div class="exam-grid" id="examContainer">
+        <p style="color: #64748b;">Memuat jadwal ujian...</p>
+      </div>
+    </div>
+
+    <!-- 2. TABEL MONITORING SISWA REALTIME -->
+    <div class="card">
+      <div class="card-title">
+        <span>👥 Monitoring Progres Peserta Ujian</span>
+        <span id="studentCountBadge" style="font-size: 0.8rem; font-weight: 700; color: var(--accent);">0 Siswa</span>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="searchStudent" class="search-input" placeholder="🔍 Cari NISN atau Nama Siswa..." oninput="filterStudents()">
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>NISN</th>
+              <th>Nama Siswa</th>
+              <th>Kelas</th>
+              <th>Status Login</th>
+              <th>Paket Ujian</th>
+              <th>Soal Aktif</th>
+              <th>Sisa Waktu</th>
+              <th>Aksi Proktor</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Memuat data monitoring...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    © 2026 CBT AKM System • Portal Khusus Proktor & Pengawas
+  </footer>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7y6F-755S42rE1vfNFccjugXs3DsXO9sdvBjE90Ld7LgzI1VSmoJzXz4uWivKglVY/exec";
+    let allStudentsData = [];
+
+    // 📥 TARIK DATA DARI SPREADSHEET
+    async function loadProktorData() {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "getproktordata" })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          allStudentsData = result.students || [];
+          renderExams(result.exams || []);
+          renderStudents(allStudentsData);
+        }
+      } catch (err) {
+        console.error("Gagal load proktor data:", err);
+      }
+    }
+
+    // RENDER STATUS PAKET UJIAN
+    function renderExams(exams) {
+      const container = document.getElementById("examContainer");
+      if (exams.length === 0) {
+        container.innerHTML = `<p style="color: #64748b;">Tidak ada jadwal ujian.</p>`;
+        return;
+      }
+
+      let html = "";
+      exams.forEach(exam => {
+        const isOpen = (exam.status === "OPEN" || exam.status === "AKTIF");
+        html += `
+          <div class="exam-box">
+            <div class="exam-info">
+              <h4>${exam.kode}</h4>
+              <p>${exam.nama}</p>
+            </div>
+            <button class="btn-toggle-status ${isOpen ? 'status-open' : 'status-close'}" onclick="toggleExamStatus('${exam.kode}', '${isOpen ? 'CLOSE' : 'OPEN'}')">
+              ${isOpen ? '🟢 OPEN' : '🔴 CLOSE'}
+            </button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // RENDER TABEL SISWA
+    function renderStudents(students) {
+      const tbody = document.getElementById("studentTableBody");
+      document.getElementById("studentCountBadge").innerText = `${students.length} Siswa Terdaftar`;
+
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">Data siswa tidak ditemukan.</td></tr>`;
+        return;
+      }
+
+      let html = "";
+      students.forEach(s => {
+        const isOnline = s.status.startsWith("ONLINE_");
+        const statusBadge = isOnline 
+          ? `<span class="badge-status badge-online">🔒 TERKUNCI (${s.status})</span>`
+          : `<span class="badge-status badge-offline">OFFLINE</span>`;
+
+        html += `
+          <tr>
+            <td><strong>${s.username}</strong></td>
+            <td>${s.nama}</td>
+            <td>${s.kelas}</td>
+            <td>${statusBadge}</td>
+            <td>${s.paket}</td>
+            <td>${s.noSoal !== '-' ? `Soal <strong>${s.noSoal}</strong> (${s.terjawab} terjawab)` : '-'}</td>
+            <td>${s.sisaWaktu}</td>
+            <td>
+              ${isOnline ? `<button class="btn-reset" onclick="resetStudent('${s.username}')">🔓 Reset Login</button>` : '<span style="color:#94a3b8; font-size:0.8rem;">Siap Login</span>'}
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    // PENCARIAN SISWA
+    function filterStudents() {
+      const q = document.getElementById("searchStudent").value.trim().toLowerCase();
+      const filtered = allStudentsData.filter(s => 
+        s.username.toLowerCase().includes(q) || 
+        s.nama.toLowerCase().includes(q) || 
+        s.kelas.toLowerCase().includes(q)
+      );
+      renderStudents(filtered);
+    }
+
+    // 🔓 1-KLIK RESET SISWA
+    async function resetStudent(username) {
+      if (!confirm(`Reset izin login untuk siswa dengan NISN: ${username}?`)) return;
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "proktorresetsiswa", username: username })
+        });
+        const res = await response.json();
+        alert(res.message);
+        loadProktorData();
+      } catch (err) {
+        alert("Gagal menghubungi server!");
+      }
+    }
+
+    // 🔄 TOGGLE OPEN/CLOSE UJIAN
+    async function toggleExamStatus(kode, targetStatus) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "proktortoggleexam", kode: kode, status: targetStatus })
+        });
+        const res = await response.json();
+        alert(res.message);
+        loadProktorData();
+      } catch (err) {
+        alert("Gagal mengubah status ujian!");
+      }
+    }
+
+    // Load data otomatis saat pertama kali dibuka & refresh berkala tiap 30 detik
+    document.addEventListener("DOMContentLoaded", () => {
+      loadProktorData();
+      setInterval(loadProktorData, 30000);
+    });
+  </script>
+</body>
+</html>
