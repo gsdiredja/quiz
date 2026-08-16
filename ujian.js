@@ -61,6 +61,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
+    // Ambil nomor soal terakhir yang sedang dikerjakan agar siswa tidak reset nomor saat refresh
+    const savedLastIndex = localStorage.getItem(`currentIndex_${currentUsername}_${cleanPaketId}`);
+    if (savedLastIndex !== null && !isNaN(parseInt(savedLastIndex))) {
+      currentQuestionIndex = parseInt(savedLastIndex, 10);
+    }
+
     const savedRemainingTime = localStorage.getItem(`remainingTime_${currentUsername}_${cleanPaketId}`);
     if (savedRemainingTime !== null && !isNaN(parseInt(savedRemainingTime))) {
       totalSeconds = parseInt(savedRemainingTime, 10);
@@ -80,8 +86,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (cachedQuestions) {
       questionsData = JSON.parse(cachedQuestions);
+      if (currentQuestionIndex >= questionsData.length) {
+        currentQuestionIndex = questionsData.length - 1;
+      }
       renderNumberGrid();
-      showQuestion(0);
+      showQuestion(currentQuestionIndex);
     } else {
       let loaded = false;
       let rawLoadedQuestions = null;
@@ -133,7 +142,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           finalArray = rawLoadedQuestions;
         }
 
-        // Pengacakan urutan soal
         let shuffledAll = shuffleArray(finalArray);
 
         if (maxQty > 0 && maxQty < shuffledAll.length) {
@@ -142,7 +150,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           questionsData = shuffledAll;
         }
 
-        // Pengacakan opsi jawaban pada masing-masing soal
         questionsData.forEach((q) => {
           if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
             q.options = shuffleArray(q.options);
@@ -154,7 +161,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         localStorage.setItem(cachedQuestionsKey, JSON.stringify(questionsData));
         renderNumberGrid();
-        showQuestion(0);
+        showQuestion(currentQuestionIndex);
       } else {
         if (container) {
           container.innerHTML = `
@@ -222,6 +229,7 @@ function changeFontSize(size) {
   else if (size === 'large') panel.style.fontSize = '1.15rem';
 }
 
+/* 🔒 RENDER NUMBER GRID: HANYA INDIKATOR STATUS (TIDAK BISA DIKLIK) */
 function renderNumberGrid() {
   const gridContainer = document.getElementById("numberGrid");
   if (!gridContainer || !questionsData) return;
@@ -232,33 +240,15 @@ function renderNumberGrid() {
     const isAnswered = isQuestionAnswered(qKey);
     const isActive = idx === currentQuestionIndex;
 
-    let classList = "btn-num";
+    let classList = "btn-num-indicator";
     if (isActive) classList += " active";
     else if (isAnswered) classList += " answered";
+    else if (idx < currentQuestionIndex) classList += " skipped"; // Soal terlewat
 
-    html += `<button class="${classList}" onclick="jumpToQuestion(${idx})" title="Soal ${idx + 1}">${idx + 1}</button>`;
+    html += `<div class="${classList}">${idx + 1}</div>`;
   });
 
   gridContainer.innerHTML = html;
-}
-
-function jumpToQuestion(index) {
-  if (index === currentQuestionIndex) return;
-  saveCurrentAnswer();
-
-  const currentKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
-  if (!isQuestionAnswered(currentKey)) {
-    showWarning("Jawab soal ini terlebih dahulu sebelum berpindah!");
-    return;
-  }
-
-  currentQuestionIndex = index;
-  showQuestion(currentQuestionIndex);
-
-  const sidebar = document.getElementById("gridSidebar");
-  if (sidebar && sidebar.classList.contains("open")) {
-    sidebar.classList.remove("open");
-  }
 }
 
 function showQuestion(index) {
@@ -273,7 +263,7 @@ function showQuestion(index) {
   
   let typeText = "Pilihan Ganda";
   if (q.type === "boolean") typeText = "Benar / Salah";
-  else if (q.type === "checkbox" || q.type === "checkbox_limit_2") typeText = "Pilihan Ganda Kompleks (2 Pilihan)";
+  else if (q.type === "checkbox" || q.type === "checkbox_limit_2") typeText = "Pilihan Ganda Kompleks (Pilih 2)";
   else if (q.type === "matching") typeText = "Menjodohkan";
   else if (q.type === "essay") typeText = "Uraian / Essay";
   
@@ -367,7 +357,7 @@ function showQuestion(index) {
   else if (q.type === "essay") {
     const savedText = typeof userAnswers[qKey] === "string" ? userAnswers[qKey] : "";
     html += `
-      <textarea id="essayInput" name="${qKey}" rows="6" class="essay-box" placeholder="Ketikkan jawaban uraian Anda secara rinci..." oninput="saveEssayText('${qKey}', this.value)">${savedText}</textarea>
+      <textarea id="essayInput" name="${qKey}" rows="6" class="essay-box" placeholder="Ketikkan jawaban uraian Anda..." oninput="saveEssayText('${qKey}', this.value)">${savedText}</textarea>
     `;
   }
 
@@ -376,9 +366,6 @@ function showQuestion(index) {
 
   const progEl = document.getElementById("questionProgress");
   if (progEl) progEl.innerText = `Soal ${index + 1} dari ${questionsData.length}`;
-  
-  const btnPrev = document.getElementById("btnPrev");
-  if (btnPrev) btnPrev.disabled = (index === 0);
 
   const btnNext = document.getElementById("btnNext");
   const btnSubmit = document.getElementById("btnSubmitExam");
@@ -484,29 +471,30 @@ function hideWarning() {
   if (warnEl) warnEl.style.display = "none";
 }
 
+/* 🔒 HANYA BISA MAJU KE DEPAN (KONFIRMASI JIKA SOAL AKAN DIKUNCI / TIDAK BISA KEMBALI) */
 function nextQuestion() {
   saveCurrentAnswer();
   const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
+  
   if (!isQuestionAnswered(qKey)) {
-    showWarning("Jawab soal ini terlebih dahulu sebelum melanjutkan!");
+    showWarning("Jawab pertanyaan ini terlebih dahulu sebelum melanjutkan!");
     return;
   }
-  if (currentQuestionIndex < questionsData.length - 1) {
-    currentQuestionIndex++;
-    showQuestion(currentQuestionIndex);
-  }
-}
 
-function prevQuestion() {
-  saveCurrentAnswer();
-  const qKey = questionsData[currentQuestionIndex].name || questionsData[currentQuestionIndex].id || `q_${currentQuestionIndex}`;
-  if (!isQuestionAnswered(qKey)) {
-    showWarning("Jawab soal ini terlebih dahulu sebelum berpindah!");
-    return;
-  }
-  if (currentQuestionIndex > 0) {
-    currentQuestionIndex--;
-    showQuestion(currentQuestionIndex);
+  if (confirm("Lanjut ke nomor berikutnya? Soal yang telah dilewati TIDAK DAPAT diakses kembali!")) {
+    if (currentQuestionIndex < questionsData.length - 1) {
+      currentQuestionIndex++;
+      
+      const cleanPaketId = getCleanPaketId(localStorage.getItem("soalPath"));
+      localStorage.setItem(`currentIndex_${currentUsername}_${cleanPaketId}`, currentQuestionIndex);
+
+      showQuestion(currentQuestionIndex);
+      
+      const sidebar = document.getElementById("gridSidebar");
+      if (sidebar && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+      }
+    }
   }
 }
 
@@ -632,6 +620,7 @@ function clearExamCache() {
   const cleanPaketId = getCleanPaketId(rawSoalPath);
 
   if (currentUsername) {
+    localStorage.removeItem(`currentIndex_${currentUsername}_${cleanPaketId}`);
     localStorage.removeItem(`remainingTime_${currentUsername}_${cleanPaketId}`);
     localStorage.removeItem(`questions_${currentUsername}_${cleanPaketId}`);
     localStorage.removeItem(`answers_${currentUsername}_${cleanPaketId}`);
