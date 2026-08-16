@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
 
-  // 🔄 Tarik Paket Ujian Aktif
+  // 🔄 Tarik Paket Ujian Aktif dari Sheet 'Jadwal_Ujian'
   async function loadActiveExams() {
     if (!jenisUjianSelect) return;
 
@@ -32,14 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
         jenisUjianSelect.innerHTML = `<option value="" disabled selected>🚫 Tidak ada ujian aktif saat ini</option>`;
       }
     } catch (error) {
-      console.error("Gagal memuat jadwal dari Google Apps Script:", error);
+      console.error("Gagal memuat jadwal:", error);
       jenisUjianSelect.innerHTML = `<option value="soal-uh1" selected>UH1 - Pemrograman Dasar</option>`;
     }
   }
 
   loadActiveExams();
 
-  // --- LOGIKA FORM LOGIN ---
+  // 🔑 Logika Form Login Siswa
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -85,24 +85,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch (error) {
         console.error("Login Error:", error);
-        showAlert("Hubungi Admin/Proktor");
+        showAlert("HUBUNGI ADMIN/PROKTOR");
         submitBtn.innerText = originalBtnText;
         submitBtn.disabled = false;
       }
     });
   }
 
-  // 🔴 TAMPILKAN PESAN DENGAN WARNA MERAH & BOLD
+  // 🔴 Tampilan Peringatan Merah Tebal (Bold)
   function showAlert(message) {
     if (alertBox) {
-      alertBox.innerHTML = `<span style="color: #dc2626; font-weight: 800; font-size: 0.95rem; text-transform: uppercase;">⚠️ ${message}</span>`;
+      alertBox.innerHTML = `<span style="color: #dc2626; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">⚠️ ${message}</span>`;
       alertBox.style.display = "block";
       alertBox.style.backgroundColor = "#fee2e2";
-      alertBox.style.border = "1.5px solid #ef4444";
-      alertBox.style.padding = "12px 14px";
+      alertBox.style.border = "2px solid #ef4444";
+      alertBox.style.padding = "12px 16px";
       alertBox.style.borderRadius = "8px";
-      alertBox.style.marginTop = "12px";
+      alertBox.style.marginTop = "14px";
       alertBox.style.textAlign = "center";
+      alertBox.style.boxShadow = "0 2px 6px rgba(239, 68, 68, 0.15)";
     } else {
       alert(message);
     }
