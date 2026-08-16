@@ -16,158 +16,53 @@
       --green: #16a34a;
       --red: #dc2626;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* ================= LOGIN OVERLAY ================= */
-    #adminLoginOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(15, 23, 42, 0.95);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      backdrop-filter: blur(5px);
-    }
-    .login-card {
-      background: white;
-      padding: 32px 28px;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      text-align: center;
-    }
+    #adminLoginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px); }
+    .login-card { background: white; padding: 32px 28px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
     .login-card h2 { font-size: 1.3rem; margin-bottom: 6px; color: var(--primary); }
     .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
     .form-group-login { margin-bottom: 14px; text-align: left; }
     .form-group-login label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: var(--text); }
-    .form-control-login {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-    }
+    .form-control-login { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.9rem; outline: none; }
     .form-control-login:focus { border-color: var(--accent); }
-    .btn-login-submit {
-      width: 100%;
-      padding: 10px;
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-    }
+    .btn-login-submit { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-top: 8px; }
     .btn-login-submit:hover { background-color: #1d4ed8; }
-    .login-err-msg {
-      color: var(--red);
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-top: 10px;
-      display: none;
-    }
+    .login-err-msg { color: var(--red); font-size: 0.8rem; font-weight: 700; margin-top: 10px; display: none; }
 
-    /* ================= NAVBAR ================= */
-    .admin-nav {
-      background-color: var(--primary);
-      color: white;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+    .admin-nav { background-color: var(--primary); color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .brand-title { display: flex; align-items: center; gap: 10px; }
     .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
     .badge-admin { background-color: #d97706; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
-
     .nav-actions { display: flex; align-items: center; gap: 10px; }
     .user-tag { font-size: 0.8rem; color: #94a3b8; }
     .user-tag strong { color: white; }
 
     .main-container { max-width: 1100px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
+    .card { background: var(--card); border-radius: 10px; border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
-    /* ================= CARDS & FORMS ================= */
-    .card {
-      background: var(--card);
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      padding-bottom: 10px;
-      border-bottom: 1.5px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 16px;
-    }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.85rem; font-weight: 700; color: #334155; }
-    .form-control {
-      padding: 10px 12px;
-      border-radius: 6px;
-      border: 1.5px solid var(--border);
-      font-size: 0.875rem;
-      outline: none;
-    }
+    .form-control { padding: 10px 12px; border-radius: 6px; border: 1.5px solid var(--border); font-size: 0.875rem; outline: none; }
     .form-control:focus { border-color: var(--accent); }
+    textarea.form-control { font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.4; resize: vertical; }
 
-    textarea.form-control {
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.85rem;
-      line-height: 1.4;
-      resize: vertical;
-    }
-
-    /* BUTTONS */
-    .btn-action {
-      padding: 10px 18px;
-      border-radius: 6px;
-      border: none;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .btn-action { padding: 10px 18px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     .btn-primary { background-color: var(--accent); color: white; }
     .btn-primary:hover { background-color: #1d4ed8; }
     .btn-secondary { background-color: #475569; color: white; }
     .btn-secondary:hover { background-color: #334155; }
     .btn-logout { background-color: var(--red); color: white; }
     .btn-logout:hover { background-color: #b91c1c; }
-
     .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-
     .footer { text-align: center; padding: 14px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
-
-  <!-- 🔒 LOGIN OVERLAY MODAL -->
+  <!-- LOGIN MODAL ADMIN -->
   <div id="adminLoginOverlay">
     <div class="login-card">
       <div style="font-size: 2.4rem; margin-bottom: 8px;">⚙️</div>
@@ -179,19 +74,16 @@
           <label>Username Admin</label>
           <input type="text" id="adminUser" class="form-control-login" placeholder="Username..." required autocomplete="off">
         </div>
-
         <div class="form-group-login">
           <label>Password</label>
           <input type="password" id="adminPass" class="form-control-login" placeholder="Password..." required>
         </div>
-
         <button type="submit" class="btn-login-submit">Masuk Dashboard ➡️</button>
         <div id="loginErrMsg" class="login-err-msg">⚠️ Username atau Password salah!</div>
       </form>
     </div>
   </div>
 
-  <!-- NAVBAR -->
   <header class="admin-nav">
     <div class="brand-title">
       <h1>CBT ADMIN PANEL</h1>
@@ -204,8 +96,6 @@
   </header>
 
   <main class="main-container">
-
-    <!-- FORM LOAD / EDIT PAKET YANG SUDAH ADA -->
     <div class="card">
       <div class="card-title">
         <span>🔍 Buka & Edit Paket Soal yang Ada</span>
@@ -216,7 +106,6 @@
       </div>
     </div>
 
-    <!-- FORM INPUT & MANAJEMEN PAKET SOAL -->
     <div class="card">
       <div class="card-title">
         <span>📝 Formulir Paket Ujian & Bank Soal</span>
@@ -224,14 +113,12 @@
       </div>
 
       <form id="examPackageForm" onsubmit="saveExamPackage(event)">
-        
         <div class="form-grid">
           <div class="form-group">
             <label>Kode Paket Soal (Wajib Unik / Tanpa Spasi)</label>
             <input type="text" id="kodeSoal" class="form-control" placeholder="Contoh: uh-ekonomi" required>
             <span class="help-text">Gunakan huruf kecil dan tanda minus (misal: soal-matematika).</span>
           </div>
-
           <div class="form-group">
             <label>Nama / Judul Ujian</label>
             <input type="text" id="namaUjian" class="form-control" placeholder="Contoh: Penilaian Harian Ekonomi Kelas X" required>
@@ -243,7 +130,6 @@
             <label>Durasi Ujian (Menit)</label>
             <input type="number" id="durasi" class="form-control" placeholder="60" value="60" min="5" required>
           </div>
-
           <div class="form-group">
             <label>Status Akses Ujian</label>
             <select id="statusUjian" class="form-control">
@@ -258,14 +144,12 @@
             <label>Jadwal Mulai Ujian</label>
             <input type="datetime-local" id="jadwalMulai" class="form-control" required>
           </div>
-
           <div class="form-group">
             <label>Jadwal Selesai Ujian</label>
             <input type="datetime-local" id="jadwalSelesai" class="form-control" required>
           </div>
         </div>
 
-        <!-- BANK SOAL JSON -->
         <div class="form-group" style="margin-top: 14px;">
           <label>Struktur Soal JSON (Array Soal Lengkap)</label>
           <textarea id="soalJson" class="form-control" rows="12" placeholder='[
@@ -279,24 +163,19 @@
     ]
   }
 ]' required></textarea>
-          <span class="help-text">Pastikan format JSON valid. Setiap butir soal harus memiliki properti "name" atau "id".</span>
         </div>
 
-        <!-- KUNCI JAWABAN -->
         <div class="form-group" style="margin-top: 14px;">
           <label>Kunci Jawaban Otomatis</label>
           <textarea id="kunciText" class="form-control" rows="4" placeholder="Format: q1:A, q2:B, q3:A,C, q4:{pair1:V1,pair2:V2}" required></textarea>
-          <span class="help-text">Pisahkan antar nomor dengan koma (,). Contoh: <code>q1:A, q2:B, q3:A,C, q4:Essay Manual</code></span>
         </div>
 
         <div style="margin-top: 20px; display: flex; gap: 10px;">
           <button type="submit" id="btnSubmitForm" class="btn-action btn-primary">💾 Simpan Paket Ujian ke Spreadsheet</button>
           <button type="button" class="btn-action btn-secondary" onclick="resetForm()">Bersihkan Form</button>
         </div>
-
       </form>
     </div>
-
   </main>
 
   <footer class="footer">
@@ -304,15 +183,8 @@
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/library/d/1VwoqJXTgca_joEHZU5JR8-I3yhzrF7aA_-vXzfASdE9bQvZD_bv2KkgL/7";
 
-    // 🔑 KREDENSIAL LOGIN ADMIN
-    const VALID_ADMIN_ACCOUNTS = {
-      "admin": "admin123",
-      "proktor": "proktor123"
-    };
-
-    // ================= AUTENTIKASI ADMIN =================
     function checkAdminAuth() {
       const auth = sessionStorage.getItem("adminAuth");
       const overlay = document.getElementById("adminLoginOverlay");
@@ -320,33 +192,56 @@
 
       if (auth) {
         overlay.style.display = "none";
-        nameTag.innerText = auth.toUpperCase();
+        nameTag.innerText = sessionStorage.getItem("adminNama") || auth.toUpperCase();
         setDefaultDates();
       } else {
         overlay.style.display = "flex";
       }
     }
 
-    function handleAdminLogin(e) {
+    async function handleAdminLogin(e) {
       e.preventDefault();
       const u = document.getElementById("adminUser").value.trim().toLowerCase();
       const p = document.getElementById("adminPass").value.trim();
       const errMsg = document.getElementById("loginErrMsg");
+      const btn = e.target.querySelector("button[type='submit']");
 
-      if (VALID_ADMIN_ACCOUNTS[u] && VALID_ADMIN_ACCOUNTS[u] === p) {
-        sessionStorage.setItem("adminAuth", u);
-        errMsg.style.display = "none";
-        document.getElementById("adminLoginForm").reset();
-        checkAdminAuth();
-      } else {
+      btn.innerText = "Memverifikasi...";
+      btn.disabled = true;
+      errMsg.style.display = "none";
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "authpetugas", username: u, password: p, role: "ADMIN" })
+        });
+
+        const res = await response.json();
+        if (res.status === "success") {
+          sessionStorage.setItem("adminAuth", u);
+          sessionStorage.setItem("adminNama", res.nama || u);
+          document.getElementById("adminLoginForm").reset();
+          checkAdminAuth();
+        } else {
+          errMsg.innerText = "⚠️ " + (res.message || "Username atau Password salah!");
+          errMsg.style.display = "block";
+        }
+      } catch (err) {
+        errMsg.innerText = "⚠️ Gagal terhubung ke server Google Apps Script!";
         errMsg.style.display = "block";
+      } finally {
+        btn.innerText = "Masuk Dashboard ➡️";
+        btn.disabled = false;
       }
     }
 
     function handleAdminLogout() {
-      if (confirm("Apakah Anda yakin ingin keluar dari Panel Admin?")) {
+      if (confirm("Keluar dari Panel Admin?")) {
         sessionStorage.removeItem("adminAuth");
-        checkAdminAuth();
+        sessionStorage.removeItem("adminNama");
+        window.location.href = "index.html";
       }
     }
 
@@ -354,15 +249,12 @@
       const now = new Date();
       const nextMonth = new Date();
       nextMonth.setMonth(now.getMonth() + 1);
-
       document.getElementById("jadwalMulai").value = now.toISOString().slice(0, 16);
       document.getElementById("jadwalSelesai").value = nextMonth.toISOString().slice(0, 16);
     }
 
-    // ================= SIMPAN PAKET UJIAN =================
     async function saveExamPackage(e) {
       e.preventDefault();
-
       const kodeSoal = document.getElementById("kodeSoal").value.trim().toLowerCase();
       const namaUjian = document.getElementById("namaUjian").value.trim();
       const durasi = parseInt(document.getElementById("durasi").value, 10) || 60;
@@ -372,24 +264,20 @@
       const rawSoalJson = document.getElementById("soalJson").value.trim();
       const rawKunciText = document.getElementById("kunciText").value.trim();
 
-      // Validasi JSON Soal
       let parsedSoal = null;
       try {
         parsedSoal = JSON.parse(rawSoalJson);
       } catch (err) {
-        alert("Format Soal JSON TIDAK VALID! Periksa kembali tanda kurung atau koma.");
+        alert("Format Soal JSON TIDAK VALID! Periksa kembali format tanda kurung dan koma.");
         return;
       }
 
-      // Validasi & Parse Kunci Jawaban
       const kunciObj = {};
       const pairs = rawKunciText.split(",");
       pairs.forEach(p => {
         const parts = p.split(":");
         if (parts.length >= 2) {
-          const qNum = parts[0].trim();
-          const val = parts.slice(1).join(":").trim();
-          kunciObj[qNum] = val;
+          kunciObj[parts[0].trim()] = parts.slice(1).join(":").trim();
         }
       });
 
@@ -426,7 +314,6 @@
       }
     }
 
-    // ================= MUAT PAKET UJIAN =================
     async function loadExamPackage() {
       const kode = document.getElementById("loadKodeSoal").value.trim().toLowerCase();
       if (!kode) {
@@ -453,12 +340,8 @@
             if (d.jadwal.jadwalMulai) document.getElementById("jadwalMulai").value = d.jadwal.jadwalMulai;
             if (d.jadwal.jadwalSelesai) document.getElementById("jadwalSelesai").value = d.jadwal.jadwalSelesai;
           }
-          if (d.soalJson) {
-            document.getElementById("soalJson").value = JSON.stringify(d.soalJson, null, 2);
-          }
-          if (d.kunciText) {
-            document.getElementById("kunciText").value = d.kunciText;
-          }
+          if (d.soalJson) document.getElementById("soalJson").value = JSON.stringify(d.soalJson, null, 2);
+          if (d.kunciText) document.getElementById("kunciText").value = d.kunciText;
           alert(`Paket ${kode} berhasil dimuat!`);
         } else {
           alert("Paket soal tidak ditemukan di Spreadsheet!");
