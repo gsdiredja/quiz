@@ -3,392 +3,400 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Admin - Input & Manajemen Ujian</title>
+  <title>Admin Panel - Manajemen Bank Soal & Paket Ujian CBT</title>
   <style>
     :root {
-      --primary: #1e3a8a;
-      --primary-hover: #1e40af;
+      --primary: #0f172a;
       --accent: #2563eb;
-      --bg-main: #f8fafc;
-      --text-dark: #0f172a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #1e293b;
       --text-muted: #64748b;
-      --border-color: #cbd5e1;
-      --card-bg: #ffffff;
-      --success: #16a34a;
+      --green: #16a34a;
+      --red: #dc2626;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
-    body { background-color: var(--bg-main); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
-    .admin-navbar { background-color: #0f172a; color: #ffffff; padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ================= LOGIN OVERLAY ================= */
+    #adminLoginOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(5px);
+    }
+    .login-card {
+      background: white;
+      padding: 32px 28px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-card h2 { font-size: 1.3rem; margin-bottom: 6px; color: var(--primary); }
+    .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; }
+    .form-group-login { margin-bottom: 14px; text-align: left; }
+    .form-group-login label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: var(--text); }
+    .form-control-login {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-control-login:focus { border-color: var(--accent); }
+    .btn-login-submit {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-login-submit:hover { background-color: #1d4ed8; }
+    .login-err-msg {
+      color: var(--red);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* ================= NAVBAR ================= */
+    .admin-nav {
+      background-color: var(--primary);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
     .brand-title { display: flex; align-items: center; gap: 10px; }
-    .brand-title h1 { font-size: 1.15rem; font-weight: 700; }
-    .badge-admin { background-color: #dc2626; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-    .main-container { max-width: 1000px; width: 100%; margin: 30px auto; padding: 0 20px; flex: 1; }
-    .page-title { margin-bottom: 20px; }
-    .page-title h2 { font-size: 1.5rem; color: var(--text-dark); }
-    .page-title p { font-size: 0.9rem; color: var(--text-muted); }
-    .card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03); }
-    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .brand-title h1 { font-size: 1.15rem; font-weight: 800; }
+    .badge-admin { background-color: #d97706; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .user-tag { font-size: 0.8rem; color: #94a3b8; }
+    .user-tag strong { color: white; }
+
+    .main-container { max-width: 1100px; width: 100%; margin: 20px auto; padding: 0 16px; flex: 1; }
+
+    /* ================= CARDS & FORMS ================= */
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.825rem; font-weight: 700; color: #334155; text-transform: uppercase; }
-    .form-control { padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; transition: all 0.2s; }
-    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-    textarea.form-control { font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.4; resize: vertical; }
-    .btn-submit { background-color: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-submit:hover { background-color: var(--primary-hover); }
-    .btn-submit:disabled { background-color: #94a3b8; cursor: not-allowed; }
-    .alert-box { padding: 12px 16px; border-radius: 6px; font-size: 0.875rem; margin-top: 16px; display: none; }
-    .alert-success { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-    .alert-error { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-    .footer { text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); background: white; }
+    .form-group label { font-size: 0.85rem; font-weight: 700; color: #334155; }
+    .form-control {
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      font-size: 0.875rem;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--accent); }
+
+    textarea.form-control {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      resize: vertical;
+    }
+
+    /* BUTTONS */
+    .btn-action {
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background-color: var(--accent); color: white; }
+    .btn-primary:hover { background-color: #1d4ed8; }
+    .btn-secondary { background-color: #475569; color: white; }
+    .btn-secondary:hover { background-color: #334155; }
+    .btn-logout { background-color: var(--red); color: white; }
+    .btn-logout:hover { background-color: #b91c1c; }
+
+    .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    .footer { text-align: center; padding: 14px; font-size: 0.8rem; color: var(--text-muted); background: white; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
 
-  <header class="admin-navbar">
+  <!-- 🔒 LOGIN OVERLAY MODAL -->
+  <div id="adminLoginOverlay">
+    <div class="login-card">
+      <div style="font-size: 2.4rem; margin-bottom: 8px;">⚙️</div>
+      <h2>Admin CBT System</h2>
+      <p>Masukkan akun Administrator untuk mengelola paket soal</p>
+
+      <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+        <div class="form-group-login">
+          <label>Username Admin</label>
+          <input type="text" id="adminUser" class="form-control-login" placeholder="Username..." required autocomplete="off">
+        </div>
+
+        <div class="form-group-login">
+          <label>Password</label>
+          <input type="password" id="adminPass" class="form-control-login" placeholder="Password..." required>
+        </div>
+
+        <button type="submit" class="btn-login-submit">Masuk Dashboard ➡️</button>
+        <div id="loginErrMsg" class="login-err-msg">⚠️ Username atau Password salah!</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <header class="admin-nav">
     <div class="brand-title">
-      <h1>CBT CONTROL PANEL</h1>
-      <span class="badge-admin">MODE GURU / ADMIN</span>
+      <h1>CBT ADMIN PANEL</h1>
+      <span class="badge-admin">PENGELOLA UJIAN</span>
+    </div>
+    <div class="nav-actions">
+      <span class="user-tag">Admin: <strong id="loggedAdminName">Admin</strong></span>
+      <button class="btn-action btn-logout" onclick="handleAdminLogout()">Keluar 🚪</button>
     </div>
   </header>
 
   <main class="main-container">
-    <div class="page-title">
-      <h2>Input & Pengaturan Jadwal Ujian</h2>
-      <p>Buat/Edit paket ujian, atur status manual OPEN/CLOSE, dan simpan bank soal ke Spreadsheet.</p>
-    </div>
 
-    <!-- CARD SEARCH EDIT -->
-    <div class="card" style="background-color: #f8fafc; border-color: #2563eb;">
-      <div class="card-title" style="color: #1e3a8a;">🔍 Edit Paket Soal Yang Sudah Ada</div>
-      <p style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">
-        Masukkan Kode Ujian untuk memuat data dari Spreadsheet.
-      </p>
-
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <input type="text" id="searchKodeSoal" class="form-control" placeholder="Contoh: UH2-CPP" style="max-width: 320px;">
-        <button type="button" onclick="loadExamPackageForEdit()" class="btn-submit" style="background-color: #2563eb; padding: 10px 18px;">
-          📥 Muat Data Soal
-        </button>
-        <button type="button" onclick="resetToNewMode()" id="btnResetMode" class="btn-submit" style="background-color: #64748b; padding: 10px 18px; display: none;">
-          🔄 Mode Buat Baru
-        </button>
+    <!-- FORM LOAD / EDIT PAKET YANG SUDAH ADA -->
+    <div class="card">
+      <div class="card-title">
+        <span>🔍 Buka & Edit Paket Soal yang Ada</span>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" id="loadKodeSoal" class="form-control" placeholder="Masukkan Kode Soal (Contoh: soal-uh1)" style="flex: 1; min-width: 250px;">
+        <button type="button" class="btn-action btn-secondary" onclick="loadExamPackage()">📥 Muat Data Paket</button>
       </div>
     </div>
 
-    <form id="adminForm">
-      
-      <!-- CARD 1: INFORMASI, JADWAL & KONTROL STATUS -->
-      <div class="card">
-        <div class="card-title">1. Informasi, Jadwal & Kontrol Akses</div>
+    <!-- FORM INPUT & MANAJEMEN PAKET SOAL -->
+    <div class="card">
+      <div class="card-title">
+        <span>📝 Formulir Paket Ujian & Bank Soal</span>
+        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Tersimpan langsung ke Google Spreadsheet</span>
+      </div>
+
+      <form id="examPackageForm" onsubmit="saveExamPackage(event)">
         
         <div class="form-grid">
           <div class="form-group">
-            <label for="kodeSoal">Kode Ujian / Paket ID</label>
-            <input type="text" id="kodeSoal" class="form-control" placeholder="Contoh: UH2-CPP" required>
+            <label>Kode Paket Soal (Wajib Unik / Tanpa Spasi)</label>
+            <input type="text" id="kodeSoal" class="form-control" placeholder="Contoh: uh-ekonomi" required>
+            <span class="help-text">Gunakan huruf kecil dan tanda minus (misal: soal-matematika).</span>
           </div>
 
           <div class="form-group">
-            <label for="namaUjian">Nama Ujian (Tampil di Siswa)</label>
-            <input type="text" id="namaUjian" class="form-control" placeholder="Contoh: UH2 - Pemrograman C++" required>
+            <label>Nama / Judul Ujian</label>
+            <input type="text" id="namaUjian" class="form-control" placeholder="Contoh: Penilaian Harian Ekonomi Kelas X" required>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Durasi Ujian (Menit)</label>
+            <input type="number" id="durasi" class="form-control" placeholder="60" value="60" min="5" required>
           </div>
 
           <div class="form-group">
-            <label for="durasi">Durasi (Menit)</label>
-            <input type="number" id="durasi" class="form-control" value="60" min="5" required>
-          </div>
-
-          <!-- KONTROL MANUAL STATUS BUKA / TUTUP UJIAN -->
-          <div class="form-group">
-            <label for="statusUjian">Status Kontrol Akses</label>
-            <select id="statusUjian" class="form-control" style="font-weight: bold; color: #1e3a8a;">
-              <option value="OPEN" selected>🟢 OPEN (Bisa Diakses Siswa)</option>
-              <option value="CLOSE">🔴 CLOSE (Terkunci/Ditutup)</option>
+            <label>Status Akses Ujian</label>
+            <select id="statusUjian" class="form-control">
+              <option value="OPEN">🟢 OPEN (Dapat Diakses Siswa)</option>
+              <option value="CLOSE">🔴 CLOSE (Terkunci / Ditutup)</option>
             </select>
           </div>
         </div>
 
         <div class="form-grid">
           <div class="form-group">
-            <label for="jadwalMulai">Waktu Akses Mulai</label>
+            <label>Jadwal Mulai Ujian</label>
             <input type="datetime-local" id="jadwalMulai" class="form-control" required>
           </div>
 
           <div class="form-group">
-            <label for="jadwalSelesai">Waktu Akses Selesai</label>
+            <label>Jadwal Selesai Ujian</label>
             <input type="datetime-local" id="jadwalSelesai" class="form-control" required>
           </div>
-
-          <div class="form-group">
-            <label for="maxSoal">Jumlah Soal Dikeluarkan</label>
-            <input type="number" id="maxSoal" class="form-control" placeholder="Isi 0 jika keluar semua" value="0" min="0" required>
-          </div>
-        </div>
-      </div>
-
-      <!-- CARD 2: HELPER UPLOAD GAMBAR AUTO-WEBP -->
-      <div class="card" style="background-color: #f0fdf4; border-color: #bbf7d0;">
-        <div class="card-title" style="color: #166534;">🖼️ Helper Upload Gambar Soal (Auto Convert to WebP)</div>
-        <p style="font-size:0.85rem; color:#15803d; margin-bottom:12px;">
-          Pilih file gambar. Sistem akan mengompresinya menjadi format <strong>WebP</strong> yang sangat ringan.
-        </p>
-
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-          <input type="file" id="imageInput" accept="image/*" class="form-control" style="max-width: 300px; background: white;">
-          <button type="button" onclick="processAndConvertImage()" class="btn-submit" style="background-color: #16a34a;">
-            ⚡ Konversi ke WebP
-          </button>
         </div>
 
-        <div id="imageResultBox" style="display: none; margin-top: 16px; padding: 12px; background: white; border-radius: 8px; border: 1px solid #bbf7d0;">
-          <p style="font-size: 0.8rem; color: #166534; font-weight: bold; margin-bottom: 6px;">
-            ✅ Gambar Berhasil Dikompresi ke WebP (<span id="fileSizeInfo"></span>)
-          </p>
-          <div style="display: flex; gap: 12px; align-items: center;">
-            <input type="text" id="webpDataUrl" class="form-control" readonly style="font-size: 0.8rem; background: #f8fafc;">
-            <button type="button" onclick="copyWebpData()" class="btn-submit" style="padding: 8px 16px; font-size: 0.8rem;">
-              📋 Salin Kode
-            </button>
-          </div>
-          <div style="margin-top: 10px; text-align: center;">
-            <img id="imagePreview" src="" alt="Preview" style="max-height: 120px; border-radius: 4px; border: 1px solid #cbd5e1;">
-          </div>
-        </div>
-      </div>
-
-      <!-- CARD 3: BANK SOAL JSON -->
-      <div class="card">
-        <div class="card-title">3. Copas Bank Soal (JSON Format)</div>
-        <p style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">
-          Mendukung tipe: <code>boolean</code>, <code>radio</code>, <code>checkbox_limit_2</code>, <code>matching</code>, dan <code>essay</code>.
-        </p>
-
-        <div class="form-group">
+        <!-- BANK SOAL JSON -->
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Struktur Soal JSON (Array Soal Lengkap)</label>
           <textarea id="soalJson" class="form-control" rows="12" placeholder='[
   {
     "name": "q1",
-    "type": "boolean",
-    "title": "Benar / Salah",
-    "text": "Algoritma Greedy selalu menghasilkan solusi paling optimal.",
+    "type": "radio",
+    "question": "Apa ibukota Indonesia?",
     "options": [
-      { "v": "A", "t": "Benar" },
-      { "v": "B", "t": "Salah" }
+      { "v": "A", "t": "Jakarta" },
+      { "v": "B", "t": "Bandung" }
     ]
   }
 ]' required></textarea>
+          <span class="help-text">Pastikan format JSON valid. Setiap butir soal harus memiliki properti "name" atau "id".</span>
         </div>
-      </div>
 
-      <!-- CARD 4: KUNCI JAWABAN -->
-      <div class="card">
-        <div class="card-title">4. Input Kunci Jawaban</div>
-        <p style="font-size:0.85rem; color:#64748b; margin-bottom:12px;">
-          Format: <code>KODE_SOAL: KUNCI</code> dipisahkan koma.<br>
-          Contoh: <code>q1:B, q2:A, q3:A,C, q4:{"p1":"A","p2":"B"}</code>
-        </p>
-
-        <div class="form-group">
-          <textarea id="kunciText" class="form-control" rows="4" placeholder='q1:B, q2:A, q3:A,C, q4:{"p1":"A","p2":"B"}' required></textarea>
+        <!-- KUNCI JAWABAN -->
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Kunci Jawaban Otomatis</label>
+          <textarea id="kunciText" class="form-control" rows="4" placeholder="Format: q1:A, q2:B, q3:A,C, q4:{pair1:V1,pair2:V2}" required></textarea>
+          <span class="help-text">Pisahkan antar nomor dengan koma (,). Contoh: <code>q1:A, q2:B, q3:A,C, q4:Essay Manual</code></span>
         </div>
-      </div>
 
-      <!-- ALERT & SUBMIT -->
-      <div id="alertBox" class="alert-box"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit" id="btnSubmitForm" class="btn-action btn-primary">💾 Simpan Paket Ujian ke Spreadsheet</button>
+          <button type="button" class="btn-action btn-secondary" onclick="resetForm()">Bersihkan Form</button>
+        </div>
 
-      <div style="text-align: right; margin-top: 20px;">
-        <button type="submit" id="btnSubmit" class="btn-submit">
-          💾 Simpan & Terbitkan Ujian
-        </button>
-      </div>
+      </form>
+    </div>
 
-    </form>
   </main>
 
   <footer class="footer">
-    © 2026 CBT Control Panel
+    © 2026 CBT Admin Control Panel • Management Engine
   </footer>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFO2A94RGQ_yJ9YoP7lMfBq5PLqj0xBlvJvIyFmpqw2NCIoYkIliNgbSKxjCxIPAZn/exec";
-    let currentMode = "CREATE";
 
-    // 📥 AMBIL DATA DARI SPREADSHEET UNTUK EDIT
-    async function loadExamPackageForEdit() {
-      const searchKode = document.getElementById("searchKodeSoal").value.trim();
-      if (!searchKode) {
-        alert("Masukkan Kode Ujian yang ingin diedit terlebih dahulu!");
-        return;
-      }
+    // 🔑 KREDENSIAL LOGIN ADMIN
+    const VALID_ADMIN_ACCOUNTS = {
+      "admin": "admin123",
+      "proktor": "proktor123"
+    };
 
-      hideAlert();
-      
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "getadminexampackage", kodeSoal: searchKode })
-        });
+    // ================= AUTENTIKASI ADMIN =================
+    function checkAdminAuth() {
+      const auth = sessionStorage.getItem("adminAuth");
+      const overlay = document.getElementById("adminLoginOverlay");
+      const nameTag = document.getElementById("loggedAdminName");
 
-        const result = await response.json();
-
-        if (result.status === "success") {
-          const data = result.data;
-          currentMode = "EDIT";
-          
-          document.getElementById("btnResetMode").style.display = "inline-flex";
-          document.getElementById("btnSubmit").innerText = "🔄 Perbarui & Simpan Perubahan Paket";
-          document.getElementById("btnSubmit").style.backgroundColor = "#d97706";
-
-          document.getElementById("kodeSoal").value = data.jadwal ? data.jadwal.kodeSoal : searchKode;
-          document.getElementById("kodeSoal").readOnly = true;
-          
-          if (data.jadwal) {
-            document.getElementById("namaUjian").value = data.jadwal.namaUjian || "";
-            document.getElementById("durasi").value = data.jadwal.durasi || 60;
-            document.getElementById("jadwalMulai").value = data.jadwal.jadwalMulai || "";
-            document.getElementById("jadwalSelesai").value = data.jadwal.jadwalSelesai || "";
-            document.getElementById("statusUjian").value = data.jadwal.statusUjian || "OPEN";
-          }
-
-          if (data.soalJson && !Array.isArray(data.soalJson) && data.soalJson.questions) {
-            document.getElementById("maxSoal").value = data.soalJson.maxQuestions || 0;
-            document.getElementById("soalJson").value = JSON.stringify(data.soalJson.questions, null, 2);
-          } else {
-            document.getElementById("maxSoal").value = 0;
-            document.getElementById("soalJson").value = JSON.stringify(data.soalJson || [], null, 2);
-          }
-
-          document.getElementById("kunciText").value = data.kunciText || "";
-
-          showAlert("✅ Data paket '" + searchKode + "' berhasil dimuat. Silakan lakukan perubahan di bawah.", "success");
-        } else {
-          showAlert("❌ " + result.message, "error");
-        }
-      } catch (err) {
-        showAlert("❌ Gagal terhubung ke server Google Apps Script.", "error");
+      if (auth) {
+        overlay.style.display = "none";
+        nameTag.innerText = auth.toUpperCase();
+        setDefaultDates();
+      } else {
+        overlay.style.display = "flex";
       }
     }
 
-    function resetToNewMode() {
-      currentMode = "CREATE";
-      document.getElementById("adminForm").reset();
-      document.getElementById("kodeSoal").readOnly = false;
-      document.getElementById("btnResetMode").style.display = "none";
-      document.getElementById("btnSubmit").innerText = "💾 Simpan & Terbitkan Ujian";
-      document.getElementById("btnSubmit").style.backgroundColor = "";
-      hideAlert();
-    }
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById("adminUser").value.trim().toLowerCase();
+      const p = document.getElementById("adminPass").value.trim();
+      const errMsg = document.getElementById("loginErrMsg");
 
-    function processAndConvertImage() {
-      const fileInput = document.getElementById('imageInput');
-      if (!fileInput.files || !fileInput.files[0]) {
-        alert('Pilih file gambar terlebih dahulu!');
-        return;
+      if (VALID_ADMIN_ACCOUNTS[u] && VALID_ADMIN_ACCOUNTS[u] === p) {
+        sessionStorage.setItem("adminAuth", u);
+        errMsg.style.display = "none";
+        document.getElementById("adminLoginForm").reset();
+        checkAdminAuth();
+      } else {
+        errMsg.style.display = "block";
       }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const MAX_WIDTH = 800;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const webpBase64 = canvas.toDataURL('image/webp', 0.8);
-          const head = 'data:image/webp;base64,';
-          const sizeInBytes = Math.round((webpBase64.length - head.length) * 3 / 4);
-          
-          document.getElementById('webpDataUrl').value = webpBase64;
-          document.getElementById('fileSizeInfo').innerText = `Ukuran: ${(sizeInBytes / 1024).toFixed(1)} KB`;
-          document.getElementById('imagePreview').src = webpBase64;
-          document.getElementById('imageResultBox').style.display = 'block';
-        };
-        img.src = e.target.result;
-      };
-
-      reader.readAsDataURL(file);
     }
 
-    function copyWebpData() {
-      const copyText = document.getElementById("webpDataUrl");
-      copyText.select();
-      navigator.clipboard.writeText(copyText.value);
-      alert("Kode WebP berhasil disalin!");
+    function handleAdminLogout() {
+      if (confirm("Apakah Anda yakin ingin keluar dari Panel Admin?")) {
+        sessionStorage.removeItem("adminAuth");
+        checkAdminAuth();
+      }
     }
 
-    document.getElementById("adminForm").addEventListener("submit", async (e) => {
+    function setDefaultDates() {
+      const now = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(now.getMonth() + 1);
+
+      document.getElementById("jadwalMulai").value = now.toISOString().slice(0, 16);
+      document.getElementById("jadwalSelesai").value = nextMonth.toISOString().slice(0, 16);
+    }
+
+    // ================= SIMPAN PAKET UJIAN =================
+    async function saveExamPackage(e) {
       e.preventDefault();
 
-      const btnSubmit = document.getElementById("btnSubmit");
-      const kodeSoal = document.getElementById("kodeSoal").value.trim();
+      const kodeSoal = document.getElementById("kodeSoal").value.trim().toLowerCase();
       const namaUjian = document.getElementById("namaUjian").value.trim();
-      const durasi = document.getElementById("durasi").value;
+      const durasi = parseInt(document.getElementById("durasi").value, 10) || 60;
       const statusUjian = document.getElementById("statusUjian").value;
-      const maxSoal = parseInt(document.getElementById("maxSoal").value) || 0;
       const jadwalMulai = document.getElementById("jadwalMulai").value;
       const jadwalSelesai = document.getElementById("jadwalSelesai").value;
-      const soalJsonRaw = document.getElementById("soalJson").value;
-      const kunciTextRaw = document.getElementById("kunciText").value;
+      const rawSoalJson = document.getElementById("soalJson").value.trim();
+      const rawKunciText = document.getElementById("kunciText").value.trim();
 
-      let parsedSoal = [];
+      // Validasi JSON Soal
+      let parsedSoal = null;
       try {
-        parsedSoal = JSON.parse(soalJsonRaw);
+        parsedSoal = JSON.parse(rawSoalJson);
       } catch (err) {
-        showAlert("Format JSON Soal Salah/Error! Periksa tanda petik dan kurung siku/kurawal.", "error");
+        alert("Format Soal JSON TIDAK VALID! Periksa kembali tanda kurung atau koma.");
         return;
       }
 
-      let finalSoalPackage = parsedSoal;
-      if (maxSoal > 0) {
-        finalSoalPackage = {
-          maxQuestions: maxSoal,
-          questions: Array.isArray(parsedSoal) ? parsedSoal : (parsedSoal.questions || [])
-        };
-      }
-
-      // Parsing kunci jawaban (Mendukung String biasa, Array 'A,C', dan JSON Object '{"p1":"A"}')
+      // Validasi & Parse Kunci Jawaban
       const kunciObj = {};
-      try {
-        const regex = /([^:,]+):\s*({[^}]+}|[^,]+)/g;
-        let match;
-        while ((match = regex.exec(kunciTextRaw)) !== null) {
-          const qName = match[1].trim();
-          let qKeyVal = match[2].trim();
-          if (qKeyVal.startsWith("{") && qKeyVal.endsWith("}")) {
-            try {
-              kunciObj[qName] = JSON.parse(qKeyVal);
-            } catch(e) {
-              kunciObj[qName] = qKeyVal;
-            }
-          } else {
-            kunciObj[qName] = qKeyVal.toUpperCase();
-          }
+      const pairs = rawKunciText.split(",");
+      pairs.forEach(p => {
+        const parts = p.split(":");
+        if (parts.length >= 2) {
+          const qNum = parts[0].trim();
+          const val = parts.slice(1).join(":").trim();
+          kunciObj[qNum] = val;
         }
-      } catch (err) {
-        showAlert("Format Kunci Jawaban Salah! Contoh: q1:B, q2:A, q3:A,C, q4:{\"p1\":\"A\"}", "error");
-        return;
-      }
+      });
 
+      const btnSubmit = document.getElementById("btnSubmitForm");
+      const oriText = btnSubmit.innerText;
+      btnSubmit.innerText = "Menyimpan ke Spreadsheet...";
       btnSubmit.disabled = true;
-      btnSubmit.innerText = "⏳ Memproses Ke Server...";
-      hideAlert();
-
-      const targetAction = (currentMode === "EDIT") ? "updateexampackage" : "savenewexampackage";
 
       try {
         const response = await fetch(SCRIPT_URL, {
@@ -396,43 +404,76 @@
           mode: "cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
-            action: targetAction,
+            action: "savenewexampackage",
             kodeSoal: kodeSoal,
             namaUjian: namaUjian,
             durasi: durasi,
             statusUjian: statusUjian,
             jadwalMulai: jadwalMulai,
             jadwalSelesai: jadwalSelesai,
-            soalJson: finalSoalPackage,
+            soalJson: parsedSoal,
             kunciObj: kunciObj
-          }),
+          })
         });
 
-        const result = await response.json();
-
-        if (result.status === "success") {
-          showAlert("✅ " + result.message, "success");
-          resetToNewMode();
-        } else {
-          showAlert("❌ " + (result.message || "Gagal menyimpan."), "error");
-        }
-      } catch (error) {
-        showAlert("❌ Gagal terhubung ke server Google Apps Script.", "error");
+        const res = await response.json();
+        alert(res.message || "Paket soal berhasil disimpan!");
+      } catch (err) {
+        alert("Gagal menghubungi Google Apps Script!");
       } finally {
+        btnSubmit.innerText = oriText;
         btnSubmit.disabled = false;
       }
-    });
-
-    function showAlert(msg, type) {
-      const alertBox = document.getElementById("alertBox");
-      alertBox.innerText = msg;
-      alertBox.className = "alert-box " + (type === "success" ? "alert-success" : "alert-error");
-      alertBox.style.display = "block";
     }
 
-    function hideAlert() {
-      document.getElementById("alertBox").style.display = "none";
+    // ================= MUAT PAKET UJIAN =================
+    async function loadExamPackage() {
+      const kode = document.getElementById("loadKodeSoal").value.trim().toLowerCase();
+      if (!kode) {
+        alert("Masukkan kode soal yang ingin dimuat!");
+        return;
+      }
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "getadminexampackage", kodeSoal: kode })
+        });
+
+        const res = await response.json();
+        if (res.status === "success" && res.data) {
+          const d = res.data;
+          if (d.jadwal) {
+            document.getElementById("kodeSoal").value = d.jadwal.kodeSoal;
+            document.getElementById("namaUjian").value = d.jadwal.namaUjian;
+            document.getElementById("durasi").value = d.jadwal.durasi;
+            document.getElementById("statusUjian").value = d.jadwal.statusUjian || "OPEN";
+            if (d.jadwal.jadwalMulai) document.getElementById("jadwalMulai").value = d.jadwal.jadwalMulai;
+            if (d.jadwal.jadwalSelesai) document.getElementById("jadwalSelesai").value = d.jadwal.jadwalSelesai;
+          }
+          if (d.soalJson) {
+            document.getElementById("soalJson").value = JSON.stringify(d.soalJson, null, 2);
+          }
+          if (d.kunciText) {
+            document.getElementById("kunciText").value = d.kunciText;
+          }
+          alert(`Paket ${kode} berhasil dimuat!`);
+        } else {
+          alert("Paket soal tidak ditemukan di Spreadsheet!");
+        }
+      } catch (err) {
+        alert("Gagal memuat data dari server!");
+      }
     }
+
+    function resetForm() {
+      document.getElementById("examPackageForm").reset();
+      setDefaultDates();
+    }
+
+    document.addEventListener("DOMContentLoaded", checkAdminAuth);
   </script>
 </body>
 </html>
