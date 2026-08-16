@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const alertBox = document.getElementById("alertBox");
   const jenisUjianSelect = document.getElementById("jenisUjian");
 
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQS4gz7Kwl1hw95QlyFsQFug-NQlNLG6C-dxV_EV9JAaQ1Z8zq_AeuPvaM-7p3NA82/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXMJAupaHR29GuFx5-7IECHTJ3p7Och8OgI_vBpkXXYypkRGqf6y0bS1VUTZxuCjY/exec";
 
-  // 🔄 Tarik Paket Ujian Aktif dari Sheet 'Jadwal_Ujian'
+  // Tarik Paket Ujian Aktif dari Sheet 'Jadwal_Ujian'
   async function loadActiveExams() {
     if (!jenisUjianSelect) return;
 
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadActiveExams();
 
-  // 🔑 Logika Form Login Siswa
+  // Logika Form Login Siswa
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -92,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🔴 Tampilan Peringatan Merah Tebal (Bold)
   function showAlert(message) {
     if (alertBox) {
       alertBox.innerHTML = `<span style="color: #dc2626; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;">⚠️ ${message}</span>`;
