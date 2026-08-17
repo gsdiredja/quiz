@@ -140,6 +140,11 @@
             <input type="number" id="durasi" class="form-control" placeholder="60" value="60" min="5" required>
           </div>
           <div class="form-group">
+            <label>Jumlah Soal yang Dikeluarkan (Limit)</label>
+            <input type="number" id="limitSoal" class="form-control" placeholder="0 = Tampilkan Semua" min="0" value="0">
+            <span class="help-text">Misal: Isi <strong>50</strong> jika bank soal ada 100 dan ingin diacak 50 soal saja.</span>
+          </div>
+          <div class="form-group">
             <label>Status Akses Ujian</label>
             <select id="statusUjian" class="form-control">
               <option value="OPEN">🟢 OPEN (Dapat Diakses Siswa)</option>
@@ -336,6 +341,7 @@
       const kodeSoal = document.getElementById("kodeSoal").value.trim().toLowerCase();
       const namaUjian = document.getElementById("namaUjian").value.trim();
       const durasi = parseInt(document.getElementById("durasi").value, 10) || 60;
+      const limitSoal = parseInt(document.getElementById("limitSoal").value, 10) || 0;
       const statusUjian = document.getElementById("statusUjian").value;
       const jadwalMulai = document.getElementById("jadwalMulai").value;
       const jadwalSelesai = document.getElementById("jadwalSelesai").value;
@@ -374,6 +380,7 @@
             kodeSoal: kodeSoal,
             namaUjian: namaUjian,
             durasi: durasi,
+            limitSoal: limitSoal,
             statusUjian: statusUjian,
             jadwalMulai: jadwalMulai,
             jadwalSelesai: jadwalSelesai,
@@ -414,6 +421,7 @@
             document.getElementById("kodeSoal").value = d.jadwal.kodeSoal;
             document.getElementById("namaUjian").value = d.jadwal.namaUjian;
             document.getElementById("durasi").value = d.jadwal.durasi;
+            document.getElementById("limitSoal").value = d.jadwal.limitSoal || 0;
             document.getElementById("statusUjian").value = d.jadwal.statusUjian || "OPEN";
             if (d.jadwal.jadwalMulai) document.getElementById("jadwalMulai").value = d.jadwal.jadwalMulai;
             if (d.jadwal.jadwalSelesai) document.getElementById("jadwalSelesai").value = d.jadwal.jadwalSelesai;
@@ -437,6 +445,7 @@
       document.getElementById("examPackageForm").reset();
       document.getElementById("soalUploadStatus").style.display = "none";
       document.getElementById("kunciUploadStatus").style.display = "none";
+      document.getElementById("limitSoal").value = "0";
       setDefaultDates();
     }
 
