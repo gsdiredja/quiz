@@ -54,8 +54,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // 1. Ambil Master Bank Soal (sudah diacak & dilimit dari backend)
+    // 1. Ambil Master Bank Soal & Cek Konfigurasi Limit dari Jadwal
     let masterQuestions = [];
+    let serverLimit = 0;
+
+    try {
+      // Ambil limit soal dari active exams jika tersedia
+      const activeRes = await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "getactiveexams" })
+      });
+      const activeList = await activeRes.json();
+      if (Array.isArray(activeList)) {
+        const matchedExam = activeList.find(ex => getCleanPaketId(ex.kode) === cleanPaketId);
+        if (matchedExam && matchedExam.limitSoal) {
+          serverLimit = parseInt(matchedExam.limitSoal, 10);
+        }
+      }
+    } catch (e) {}
+
     try {
       const response = await fetch(SCRIPT_URL, {
         method: "POST",
@@ -69,6 +88,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           masterQuestions = result.data.questions;
         } else if (Array.isArray(result.data)) {
           masterQuestions = result.data;
+        }
+        if (result.limitSoal) {
+          serverLimit = parseInt(result.limitSoal, 10);
         }
       }
     } catch(err) {
@@ -87,7 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 2. Cek Sesi Cloud (Restore jika ganti perangkat / refresh halaman)
+    // 2. Cek Sesi Cloud (Restore jika refresh halaman / ganti perangkat)
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -126,9 +148,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // 3. Jika sesi baru (pertama kali buka), gunakan urutan yang diberikan server
+    // 3. Jika sesi baru (pertama kali buka), lakukan acak dan pemotongan jumlah soal
     if (!sessionRestored) {
-      questionsData = masterQuestions;
+      let finalQuestions = shuffleArray(masterQuestions);
+
+      // Batasi jumlah soal sesuai limit proktor (misal 50 soal dari 100)
+      if (serverLimit > 0 && finalQuestions.length > serverLimit) {
+        finalQuestions = finalQuestions.slice(0, serverLimit);
+      }
+
+      // Acak urutan opsi jawaban tiap butir soal
+      finalQuestions.forEach((q) => {
+        if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
+          q.options = shuffleArray(q.options);
+        }
+        if (q.matchOptions && Array.isArray(q.matchOptions)) {
+          q.matchOptions = shuffleArray(q.matchOptions);
+        }
+      });
+
+      questionsData = finalQuestions;
       currentQuestionIndex = 0;
       userAnswers = {};
       await syncSessionToCloud();
@@ -523,7 +562,7 @@ async function processExamResults() {
         kelas: currentUserData.kelas || "-",
         paket: cleanPaketId,
         jawaban: userAnswers,
-        totalSoal: Array.isArray(questionsData) ? questionsData.length : 0 // Menjamin pembagi nilai presisi sesuai limit
+        totalSoal: Array.isArray(questionsData) ? questionsData.length : 0 // Menjamin pembagian nilai presisi sesuai jumlah soal yang tampil
       }),
     });
   } catch (err) {
