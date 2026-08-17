@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }
 
-    // 1. Ambil Master Bank Soal
+    // 1. Ambil Master Bank Soal (sudah diacak & dilimit dari backend)
     let masterQuestions = [];
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 2. Cek Sesi Cloud (Restore jika ganti perangkat)
+    // 2. Cek Sesi Cloud (Restore jika ganti perangkat / refresh halaman)
     let sessionRestored = false;
     try {
       const sessionRes = await fetch(SCRIPT_URL, {
@@ -126,17 +126,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.warn("Gagal restore sesi cloud:", err);
     }
 
-    // 3. Jika sesi baru (pertama kali buka)
+    // 3. Jika sesi baru (pertama kali buka), gunakan urutan yang diberikan server
     if (!sessionRestored) {
-      questionsData = shuffleArray(masterQuestions);
-      questionsData.forEach((q) => {
-        if (q.options && Array.isArray(q.options) && q.type !== "boolean") {
-          q.options = shuffleArray(q.options);
-        }
-        if (q.matchOptions && Array.isArray(q.matchOptions)) {
-          q.matchOptions = shuffleArray(q.matchOptions);
-        }
-      });
+      questionsData = masterQuestions;
       currentQuestionIndex = 0;
       userAnswers = {};
       await syncSessionToCloud();
@@ -530,7 +522,8 @@ async function processExamResults() {
         nama: currentUserData.nama || "-",
         kelas: currentUserData.kelas || "-",
         paket: cleanPaketId,
-        jawaban: userAnswers
+        jawaban: userAnswers,
+        totalSoal: Array.isArray(questionsData) ? questionsData.length : 0 // Menjamin pembagi nilai presisi sesuai limit
       }),
     });
   } catch (err) {
